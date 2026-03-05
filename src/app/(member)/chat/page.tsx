@@ -25,7 +25,7 @@ export default async function ChatPage() {
     )
     .order("created_at", { ascending: false });
 
-  const authorIds = [...new Set(posts?.map((p) => p.author_id) ?? [])];
+  const authorIds = Array.from(new Set(posts?.map((p) => p.author_id) ?? []));
   const { data: authorProfiles } =
     authorIds.length > 0
       ? await supabase

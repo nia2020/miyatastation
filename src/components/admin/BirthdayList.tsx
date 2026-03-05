@@ -100,7 +100,7 @@ export function BirthdayList() {
       map.get(month)?.push(b);
     }
     // 各月内で日付順にソート
-    for (const [month, entries] of map) {
+    for (const [, entries] of Array.from(map)) {
       entries.sort((a, b) => {
         const aDay = parseInt(a.birthday.split("-")[2], 10);
         const bDay = parseInt(b.birthday.split("-")[2], 10);

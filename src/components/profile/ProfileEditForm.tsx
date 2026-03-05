@@ -12,7 +12,7 @@ interface ProfileEditFormProps {
 /** 誕生日の2週間前以内かどうか（読んで欲しい名前の編集不可期間） */
 function isWithinTwoWeeksBeforeBirthday(birthdayStr: string): boolean {
   if (!birthdayStr) return false;
-  const [_, month, day] = birthdayStr.split("-").map(Number);
+  const [, month, day] = birthdayStr.split("-").map(Number);
   const today = new Date();
   const thisYearBirthday = new Date(today.getFullYear(), month - 1, day);
   let nextBirthday = thisYearBirthday;

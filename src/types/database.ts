@@ -89,6 +89,7 @@ export interface Database {
           questions: string[];
           week_start: string;
           is_active: boolean;
+          google_form_url?: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -98,6 +99,7 @@ export interface Database {
           questions: string[];
           week_start: string;
           is_active?: boolean;
+          google_form_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -107,6 +109,7 @@ export interface Database {
           questions?: string[];
           week_start?: string;
           is_active?: boolean;
+          google_form_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };

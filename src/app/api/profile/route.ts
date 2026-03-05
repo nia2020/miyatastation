@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 /** 誕生日の2週間前以内かどうか */
 function isWithinTwoWeeksBeforeBirthday(birthdayStr: string): boolean {
-  const [_, month, day] = birthdayStr.split("-").map(Number);
+  const [, month, day] = birthdayStr.split("-").map(Number);
   const today = new Date();
   const thisYearBirthday = new Date(today.getFullYear(), month - 1, day);
   let nextBirthday = thisYearBirthday;

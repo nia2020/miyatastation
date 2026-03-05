@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/EventCard";
 import { GoogleFormLink } from "@/components/forms/GoogleFormLink";
@@ -6,13 +5,7 @@ import { ChatPost } from "@/components/chat/ChatPost";
 import { ChatPostForm } from "@/components/chat/ChatPostForm";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 
-const SECTIONS = [
-  { id: "events", label: "イベント情報" },
-  { id: "forms", label: "メッセージ募集" },
-  { id: "chat", label: "タイムライン" },
-] as const;
-
-type SectionId = (typeof SECTIONS)[number]["id"];
+type SectionId = "events" | "forms" | "chat";
 
 export default async function DashboardPage({
   searchParams,
@@ -112,7 +105,7 @@ export default async function DashboardPage({
     )
     .order("created_at", { ascending: false });
 
-  const authorIds = [...new Set(posts?.map((p) => p.author_id) ?? [])];
+  const authorIds = Array.from(new Set(posts?.map((p) => p.author_id) ?? []));
   const { data: authorProfiles } =
     authorIds.length > 0
       ? await supabase
