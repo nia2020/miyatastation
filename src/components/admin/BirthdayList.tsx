@@ -99,12 +99,12 @@ export function BirthdayList() {
       const month = parseInt(b.birthday.split("-")[1], 10);
       map.get(month)?.push(b);
     }
-    // 各月内で日付順にソート
+    // 各月内で遅い日を上にソート（28日→15日→10日の順）
     for (const [, entries] of Array.from(map)) {
       entries.sort((a, b) => {
         const aDay = parseInt(a.birthday.split("-")[2], 10);
         const bDay = parseInt(b.birthday.split("-")[2], 10);
-        return aDay - bDay;
+        return bDay - aDay;
       });
     }
     return map;

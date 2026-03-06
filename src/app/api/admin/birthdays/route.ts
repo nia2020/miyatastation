@@ -59,12 +59,12 @@ export async function GET() {
         celebrated: celebratedIds.has(p.id),
       })) ?? [];
 
-    // 月日でソート（年を無視して1/1〜12/31の順）
+    // 月日でソート（遅い方を上に：12/31→1/1の順）
     const sorted = withCelebrated.slice().sort((a, b) => {
       if (!a.birthday || !b.birthday) return 0;
       const [aM, aD] = a.birthday.split("-").slice(1).map(Number);
       const [bM, bD] = b.birthday.split("-").slice(1).map(Number);
-      return aM !== bM ? aM - bM : aD - bD;
+      return aM !== bM ? bM - aM : bD - aD;
     });
 
     return NextResponse.json({ birthdays: sorted });
