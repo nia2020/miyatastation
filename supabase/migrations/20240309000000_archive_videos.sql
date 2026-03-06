@@ -11,11 +11,13 @@ CREATE TABLE IF NOT EXISTS public.archive_videos (
 
 ALTER TABLE public.archive_videos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view archive videos" ON public.archive_videos;
 CREATE POLICY "Authenticated users can view archive videos"
   ON public.archive_videos FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Admins can manage archive videos" ON public.archive_videos;
 CREATE POLICY "Admins can manage archive videos"
   ON public.archive_videos FOR ALL
   TO authenticated

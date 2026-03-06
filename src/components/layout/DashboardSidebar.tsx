@@ -26,12 +26,15 @@ interface DashboardSidebarProps {
   currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos";
   currentSection?: string;
   newFlags?: { events?: boolean; forms?: boolean; chat?: boolean };
+  /** モバイルドロワー用：リンククリック時に閉じるコールバック */
+  onLinkClick?: () => void;
 }
 
 export function DashboardSidebar({
   currentPage = "dashboard",
   currentSection,
   newFlags,
+  onLinkClick,
 }: DashboardSidebarProps) {
   return (
     <aside className="lg:w-48 shrink-0">
@@ -47,6 +50,7 @@ export function DashboardSidebar({
             <Link
               key={id}
               href={href}
+              onClick={onLinkClick}
               className={`flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-left font-medium transition-colors ${
                 currentPage === "dashboard" && (currentSection || "home") === id
                   ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
@@ -70,6 +74,7 @@ export function DashboardSidebar({
           <Link
             key={id}
             href={href}
+            onClick={onLinkClick}
             className={`flex items-center gap-3 rounded-lg px-4 py-3 text-left font-medium transition-colors ${
               currentPage === id
                 ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
