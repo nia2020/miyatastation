@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const SECTIONS = [
+  { id: "home", label: "会員TOP", href: "/dashboard" },
   { id: "events", label: "イベント情報", href: "/dashboard?section=events" },
   { id: "forms", label: "メッセージ募集", href: "/dashboard?section=forms" },
   { id: "chat", label: "タイムライン", href: "/dashboard?section=chat" },
@@ -30,7 +31,7 @@ export function DashboardSidebar({
             key={id}
             href={href}
             className={`block rounded-lg px-4 py-3 text-left font-medium transition-colors ${
-              currentPage === "dashboard" && (currentSection || "events") === id
+              currentPage === "dashboard" && (currentSection || "home") === id
                 ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
                 : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }`}
