@@ -32,10 +32,10 @@ export function DashboardSidebar({
   newFlags,
 }: DashboardSidebarProps) {
   return (
-    <aside className="w-48 shrink-0">
-      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">ダッシュボード</h1>
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">メンバー専用サイト</p>
-      <nav className="mt-6 flex flex-col gap-1">
+    <aside className="lg:w-48 shrink-0">
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">ダッシュボード</h1>
+      <p className="mt-1 sm:mt-2 text-sm text-slate-600 dark:text-slate-400">メンバー専用サイト</p>
+      <nav className="mt-4 lg:mt-6 flex flex-col gap-1">
         {SECTIONS.map(({ id, label, href, icon: Icon }) => {
           const isNew =
             (id === "events" && newFlags?.events) ||

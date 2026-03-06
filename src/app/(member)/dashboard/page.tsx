@@ -85,7 +85,7 @@ export default async function DashboardHomePage() {
   const announcement = announcementRow?.value?.trim() ?? "";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-w-0 overflow-hidden">
         {announcement && (
           <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
@@ -149,8 +149,8 @@ export default async function DashboardHomePage() {
             );
           })}
         </div>
-        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-wrap gap-8 items-start">
-          <div className="w-72 shrink-0">
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 items-stretch sm:items-start">
+          <div className="w-full sm:w-72 min-w-0 shrink-0">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
               Online Community Miyata Station
             </p>
@@ -169,7 +169,7 @@ export default async function DashboardHomePage() {
               />
             </a>
           </div>
-          <div className="w-72 shrink-0">
+          <div className="w-full sm:w-72 min-w-0 shrink-0">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
               MIYATA KAZUYA Official Site
             </p>
@@ -188,7 +188,7 @@ export default async function DashboardHomePage() {
               />
             </a>
           </div>
-          <div className="w-72 shrink-0">
+          <div className="w-full sm:w-72 min-w-0 shrink-0">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
               JUN SKY WALKER(S) Official Site
             </p>

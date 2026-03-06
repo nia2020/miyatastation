@@ -19,7 +19,7 @@ export default async function MemberCardPage() {
   if (!profile) return null;
 
   return (
-    <div className="flex gap-8">
+    <div className="flex flex-col lg:flex-row lg:gap-8 gap-6">
       <DashboardSidebar currentPage="member-card" />
       <main className="min-w-0 flex-1">
         <div className="space-y-6">

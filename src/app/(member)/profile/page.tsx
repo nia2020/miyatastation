@@ -20,7 +20,7 @@ export default async function ProfilePage() {
   if (!profile) redirect("/dashboard");
 
   return (
-    <div className="flex gap-8">
+    <div className="flex flex-col lg:flex-row lg:gap-8 gap-6">
       <DashboardSidebar currentPage="profile" />
       <main className="min-w-0 flex-1">
         <div className="space-y-6">

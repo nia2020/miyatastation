@@ -25,7 +25,7 @@ export function DashboardShell({ children, newFlags }: DashboardShellProps) {
   return (
     <>
       <SectionViewTracker />
-      <div className="flex gap-8">
+      <div className="flex flex-col lg:flex-row lg:gap-8 gap-6">
         <DashboardSidebar
           currentPage="dashboard"
           currentSection={currentSection}
