@@ -189,6 +189,35 @@ export interface Database {
           created_at?: string;
         };
       };
+      archive_videos: {
+        Row: {
+          id: string;
+          title: string;
+          youtube_url: string;
+          published_at: string;
+          expires_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          youtube_url: string;
+          published_at: string;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          youtube_url?: string;
+          published_at?: string;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
@@ -200,3 +229,4 @@ export type FormSubmission =
   Database["public"]["Tables"]["form_submissions"]["Row"];
 export type AdminPost = Database["public"]["Tables"]["admin_posts"]["Row"];
 export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];
+export type ArchiveVideo = Database["public"]["Tables"]["archive_videos"]["Row"];

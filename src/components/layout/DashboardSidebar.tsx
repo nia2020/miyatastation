@@ -6,6 +6,7 @@ import {
   Hash,
   CreditCard,
   UserCircle,
+  Video,
 } from "lucide-react";
 
 const SECTIONS = [
@@ -18,10 +19,11 @@ const SECTIONS = [
 const PAGES = [
   { id: "member-card", label: "デジタル会員証", href: "/member-card", icon: CreditCard },
   { id: "profile", label: "プロフィール編集", href: "/profile", icon: UserCircle },
+  { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
 ] as const;
 
 interface DashboardSidebarProps {
-  currentPage?: "dashboard" | "member-card" | "profile";
+  currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos";
   currentSection?: string;
   newFlags?: { events?: boolean; forms?: boolean; chat?: boolean };
 }

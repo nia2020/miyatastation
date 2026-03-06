@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { BannerLinks } from "./BannerLinks";
 import { SectionViewTracker } from "@/components/dashboard/SectionViewTracker";
 
 type SectionId = "home" | "events" | "forms" | "chat";
@@ -22,16 +23,28 @@ export function DashboardShell({ children, newFlags }: DashboardShellProps) {
           ? "chat"
           : "home";
 
+  const currentPage =
+    pathname === "/member-card"
+      ? "member-card"
+      : pathname === "/profile"
+        ? "profile"
+        : pathname === "/dashboard/archive-videos"
+          ? "archive-videos"
+          : "dashboard";
+
   return (
     <>
       <SectionViewTracker />
       <div className="flex flex-col lg:flex-row lg:gap-8 gap-6">
         <DashboardSidebar
-          currentPage="dashboard"
+          currentPage={currentPage}
           currentSection={currentSection}
           newFlags={newFlags}
         />
-        <main className="min-w-0 flex-1">{children}</main>
+        <div className="min-w-0 flex-1 space-y-8">
+          {children}
+          <BannerLinks />
+        </div>
       </div>
     </>
   );

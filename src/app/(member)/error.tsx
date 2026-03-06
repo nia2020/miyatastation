@@ -14,28 +14,61 @@ export default function MemberError({
     console.error("Member area error:", error);
   }, [error]);
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#0f172a",
+    padding: "1rem",
+  };
+  const cardStyle: React.CSSProperties = {
+    maxWidth: "32rem",
+    width: "100%",
+    background: "#1e293b",
+    borderRadius: "0.75rem",
+    border: "1px solid #334155",
+    padding: "2rem",
+    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
-      <div className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-8 shadow-lg">
-        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4">
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#e2e8f0", marginBottom: "1rem" }}>
           エラーが発生しました
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 font-mono break-all">
+        <p style={{ fontSize: "0.875rem", color: "#94a3b8", marginBottom: "1rem", fontFamily: "monospace", wordBreak: "break-all" }}>
           {error.message}
         </p>
-        <p className="text-xs text-slate-500 dark:text-slate-500 mb-6">
+        <p style={{ fontSize: "0.75rem", color: "#64748b", marginBottom: "1.5rem" }}>
           ブラウザの開発者ツール（F12）のコンソールにも詳細が表示されます。
         </p>
-        <div className="flex gap-3">
+        <div style={{ display: "flex", gap: "0.75rem" }}>
           <button
             onClick={reset}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+            style={{
+              padding: "0.5rem 1rem",
+              background: "#6366f1",
+              color: "white",
+              border: "none",
+              borderRadius: "0.5rem",
+              cursor: "pointer",
+              fontWeight: 500,
+            }}
           >
             再試行
           </button>
           <Link
             href="/dashboard"
-            className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 font-medium"
+            style={{
+              padding: "0.5rem 1rem",
+              background: "#475569",
+              color: "#e2e8f0",
+              borderRadius: "0.5rem",
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
           >
             ダッシュボードへ
           </Link>

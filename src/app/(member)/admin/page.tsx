@@ -42,6 +42,16 @@ export default function AdminPage() {
           誕生日が登録されている会員の一覧
         </p>
       </Link>
+
+      <Link
+        href="/admin/archive-videos"
+        className="block p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all"
+      >
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">アーカイブ動画</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          YouTubeリンクと公開期間の設定
+        </p>
+      </Link>
     </div>
   );
 }
