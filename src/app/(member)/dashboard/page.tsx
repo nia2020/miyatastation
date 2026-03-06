@@ -96,13 +96,26 @@ export default async function DashboardHomePage() {
             </p>
           </div>
         )}
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-            会員TOP
-          </h2>
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
-            ようこそ、{profile?.nickname?.trim() || profile?.full_name || "会員"}さん
-          </p>
+        <div className="flex items-center gap-6">
+          <div className="shrink-0 w-24 h-24">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mascot.png"
+              alt="Miyata Station マスコット"
+              width={96}
+              height={96}
+              className="h-24 w-24 object-contain block bg-transparent"
+              style={{ background: "transparent" }}
+            />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+              会員TOP
+            </h2>
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
+              ようこそ、{profile?.nickname?.trim() || profile?.full_name || "会員"}さん
+            </p>
+          </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {HUB_LINKS.map(({ href, title, description, icon: Icon }) => {

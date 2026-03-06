@@ -47,6 +47,14 @@ export default async function MemberLayout({
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <Image
+                  src="/mascot.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
+                  aria-hidden
+                />
+                <Image
                   src="/logo.png"
                   alt="Miyata Station"
                   width={160}
