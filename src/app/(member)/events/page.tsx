@@ -3,6 +3,15 @@ import { EventCard } from "@/components/events/EventCard";
 
 export default async function EventsPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from("user_section_views").upsert(
+      { user_id: user.id, section: "events", last_viewed_at: new Date().toISOString() },
+      { onConflict: "user_id,section" }
+    );
+  }
   const { data: upcomingEvents } = await supabase
     .from("events")
     .select("*")

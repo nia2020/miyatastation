@@ -30,6 +30,7 @@ npm install
    - `20240305000000_profile_onboarding.sql`
    - `20240306000000_birthday_celebrations.sql`
    - `20240307000000_profiles_select_authenticated.sql`
+   - `20240308000000_user_section_views.sql`（NEW ラベル用・任意）
 4. Authentication > Providers > Email で以下を設定:
    - Email を有効化（デフォルトで有効）
    - **「Enable email signup」をオフ** にし、一般ユーザーの自己登録を無効化

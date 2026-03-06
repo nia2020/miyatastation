@@ -1,31 +1,23 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { Calendar, MessageSquare, Hash, CreditCard, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import type { Event } from "@/types/database";
-import { EventCard } from "@/components/events/EventCard";
-import { GoogleFormLink } from "@/components/forms/GoogleFormLink";
-import { ChatPost } from "@/components/chat/ChatPost";
-import { ChatPostForm } from "@/components/chat/ChatPostForm";
-import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
-
-type SectionId = "home" | "events" | "forms" | "chat";
 
 const HUB_LINKS = [
   {
-    href: "/dashboard?section=events",
+    href: "/dashboard/events",
     title: "イベント情報",
     description: "Zoomイベントのスケジュールと入室情報",
     icon: Calendar,
   },
   {
-    href: "/dashboard?section=forms",
+    href: "/dashboard/forms",
     title: "メッセージ募集",
     description: "Googleフォームでメッセージを送信",
     icon: MessageSquare,
   },
   {
-    href: "/dashboard?section=chat",
+    href: "/dashboard/chat",
     title: "タイムライン",
     description: "コミュニティの投稿を確認",
     icon: Hash,
@@ -44,45 +36,9 @@ const HUB_LINKS = [
   },
 ] as const;
 
-function parseMessageForms(configMap: Record<string, string | null> | null | undefined) {
-  let forms: { title: string; url: string; description?: string }[] = [];
-  try {
-    const parsed = configMap?.message_collection_forms?.trim();
-    if (parsed) {
-      const arr = JSON.parse(parsed) as unknown;
-      if (Array.isArray(arr)) {
-        forms = arr
-          .filter(
-            (f): f is { title: string; url: string; description?: string } =>
-              f &&
-              typeof f === "object" &&
-              typeof (f as { title: string; url: string }).title === "string" &&
-              typeof (f as { title: string; url: string }).url === "string"
-          )
-          .map((f) => ({
-            title: (f as { title: string; url: string; description?: string }).title,
-            url: (f as { title: string; url: string }).url,
-            description: typeof (f as { description?: string }).description === "string" ? (f as { description: string }).description : "",
-          }));
-      }
-    }
-  } catch {}
-  if (forms.length === 0 && configMap?.google_form_url?.trim()) {
-    forms = [{
-      title: configMap?.message_collection_title?.trim() || "メッセージ募集",
-      url: configMap.google_form_url,
-      description: "",
-    }];
-  }
-  return forms;
-}
+export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { section?: string };
-}) {
-  const section = (searchParams?.section as SectionId) || "home";
+export default async function DashboardHomePage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -96,298 +52,149 @@ export default async function DashboardPage({
     .eq("id", user.id)
     .single();
 
-  // 表示セクションに応じて必要なデータのみ取得（パフォーマンス最適化）
-  let upcomingEvents: Event[] | null = null;
-  let pastEvents: Event[] | null = null;
-  let messageForms: { title: string; url: string; description?: string }[] = [];
-  let announcement = "";
-
-  if (section === "home") {
-    const { data: announcementRow } = await supabase
-      .from("site_config")
-      .select("value")
-      .eq("key", "announcement")
-      .maybeSingle();
-    announcement = announcementRow?.value?.trim() ?? "";
-  }
-  let commentsOrdered: Array<{
-    id: string;
-    title: string;
-    content: string;
-    author_id: string;
-    created_at: string;
-    updated_at: string;
-    images?: string[];
-    comments: Array<{
-      id: string;
-      post_id: string;
-      user_id: string;
-      content: string;
-      created_at: string;
-      profiles: { full_name: string } | null;
-    }>;
-  }> = [];
-  let authorMap: Record<string, string> = {};
-
-  if (section === "events") {
-    const [upcoming, past] = await Promise.all([
-      supabase
-        .from("events")
-        .select("*")
-        .gte("event_date", new Date().toISOString())
-        .order("event_date", { ascending: true }),
-      supabase
-        .from("events")
-        .select("*")
-        .lt("event_date", new Date().toISOString())
-        .order("event_date", { ascending: false })
-        .limit(5),
+  let newFlags = { events: false, forms: false, chat: false };
+  try {
+    const [contentUpdates, userViews] = await Promise.all([
+      Promise.all([
+        supabase.from("events").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("site_config").select("updated_at").eq("key", "message_collection_forms").maybeSingle(),
+        supabase.from("admin_posts").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      ]),
+      supabase.from("user_section_views").select("section, last_viewed_at").eq("user_id", user.id),
     ]);
-    upcomingEvents = upcoming.data;
-    pastEvents = past.data;
-  } else if (section === "forms") {
-    const { data: configRows } = await supabase
-      .from("site_config")
-      .select("key, value")
-      .in("key", [
-        "message_collection_forms",
-        "google_form_url",
-        "message_collection_title",
-      ]);
-    const configMap = configRows?.reduce(
-      (acc, r) => {
-        acc[r.key] = r.value;
-        return acc;
-      },
-      {} as Record<string, string | null>
+    const lastViewedMap = Object.fromEntries(
+      (userViews.data ?? []).map((r) => [r.section, r.last_viewed_at])
     );
-    messageForms = parseMessageForms(configMap);
-  } else if (section === "chat") {
-    const { data: posts } = await supabase
-      .from("admin_posts")
-      .select(
-        `
-        *,
-        comments:post_comments(
-          id,
-          post_id,
-          user_id,
-          content,
-          created_at,
-          profiles(full_name)
-        )
-      `
-      )
-      .order("created_at", { ascending: false });
-
-    const authorIds = Array.from(new Set(posts?.map((p) => p.author_id) ?? []));
-    const { data: authorProfiles } =
-      authorIds.length > 0
-        ? await supabase
-            .from("profiles")
-            .select("id, full_name")
-            .in("id", authorIds)
-        : { data: [] };
-    authorMap = Object.fromEntries(
-      authorProfiles?.map((p) => [p.id, p.full_name]) ?? []
-    );
-    commentsOrdered =
-      posts?.map((p) => ({
-        ...p,
-        comments:
-          (p.comments as Array<{
-            id: string;
-            post_id: string;
-            user_id: string;
-            content: string;
-            created_at: string;
-            profiles: { full_name: string } | null;
-          }>)?.sort(
-            (a, b) =>
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          ) ?? [],
-      })) ?? [];
+    const eventsLastUpdate = contentUpdates[0].data?.updated_at;
+    const formsLastUpdate = contentUpdates[1].data?.updated_at;
+    const chatLastUpdate = contentUpdates[2].data?.created_at;
+    newFlags = {
+      events: !!eventsLastUpdate && new Date(eventsLastUpdate) > new Date(lastViewedMap.events ?? 0),
+      forms: !!formsLastUpdate && new Date(formsLastUpdate) > new Date(lastViewedMap.forms ?? 0),
+      chat: !!chatLastUpdate && new Date(chatLastUpdate) > new Date(lastViewedMap.chat ?? 0),
+    };
+  } catch {
+    // user_section_views テーブルが無い場合など
   }
+
+  const { data: announcementRow } = await supabase
+    .from("site_config")
+    .select("value")
+    .eq("key", "announcement")
+    .maybeSingle();
+  const announcement = announcementRow?.value?.trim() ?? "";
 
   return (
-    <div className="flex gap-8">
-      <DashboardSidebar currentPage="dashboard" currentSection={section} />
-
-      {/* 右: コンテンツ */}
-      <main className="min-w-0 flex-1">
-        {section === "home" && (
-          <div className="space-y-8">
-            {announcement && (
-              <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
-                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
-                  📢 運営からのお知らせ
-                </p>
-                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                  {announcement}
-                </p>
-              </div>
-            )}
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                会員TOP
-              </h2>
-              <p className="mt-2 text-slate-600 dark:text-slate-400">
-                ようこそ、{profile?.nickname?.trim() || profile?.full_name || "会員"}さん
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {HUB_LINKS.map(({ href, title, description, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md"
-                >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-200">
-                      {title}
-                    </h3>
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                      {description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-wrap gap-8 items-start">
-              <div className="w-72 shrink-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  Online Community Miyata Station
-                </p>
-                <a
-                  href="https://sunhouse-miyata-kazuya.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block hover:opacity-80 transition-opacity"
-                >
-                  <Image
-                    src="/banner-sunhouse.png"
-                    alt="宮田和弥 Online Community Miyata Station"
-                    width={288}
-                    height={48}
-                    className="w-full h-14 object-contain object-left invert"
-                  />
-                </a>
-              </div>
-              <div className="w-72 shrink-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  MIYATA KAZUYA Official Site
-                </p>
-                <a
-                  href="https://www.miyata-kazuya.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block hover:opacity-80 transition-opacity"
-                >
-                  <Image
-                    src="/banner-miyata.png"
-                    alt="宮田和弥 オフィシャルサイト"
-                    width={288}
-                    height={48}
-                    className="w-full h-14 object-contain object-left invert"
-                  />
-                </a>
-              </div>
-              <div className="w-72 shrink-0">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  JUN SKY WALKER(S) Official Site
-                </p>
-                <a
-                  href="http://junskywalkers.jp/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block hover:opacity-80 transition-opacity"
-                >
-                  <Image
-                    src="/banner-junskywalkers.png"
-                    alt="JUN SKY WALKER(S) オフィシャルサイト"
-                    width={288}
-                    height={48}
-                    className="w-full h-14 object-contain object-left invert"
-                  />
-                </a>
-              </div>
-            </div>
+    <div className="space-y-8">
+        {announcement && (
+          <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
+              📢 運営からのお知らせ
+            </p>
+            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+              {announcement}
+            </p>
           </div>
         )}
-
-        {section === "events" && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-              イベント情報
-            </h2>
-            {upcomingEvents && upcomingEvents.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 text-center text-slate-600 dark:text-slate-400">
-                現在予定されているイベントはありません
-              </div>
-            )}
-            {pastEvents && pastEvents.length > 0 && (
-              <>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mt-8">
-                  過去のイベント
-                </h2>
-                <div className="space-y-4">
-                  {pastEvents.map((event) => (
-                    <EventCard key={event.id} event={event} isPast />
-                  ))}
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+            会員TOP
+          </h2>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
+            ようこそ、{profile?.nickname?.trim() || profile?.full_name || "会員"}さん
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {HUB_LINKS.map(({ href, title, description, icon: Icon }) => {
+            const isNew =
+              (href.includes("/events") && newFlags.events) ||
+              (href.includes("/forms") && newFlags.forms) ||
+              (href.includes("/chat") && newFlags.chat);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="relative flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md"
+              >
+                {isNew && (
+                  <span className="absolute top-3 right-3 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded">
+                    NEW
+                  </span>
+                )}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                  <Icon className="h-6 w-6" />
                 </div>
-              </>
-            )}
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-200">
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    {description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-wrap gap-8 items-start">
+          <div className="w-72 shrink-0">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              Online Community Miyata Station
+            </p>
+            <a
+              href="https://sunhouse-miyata-kazuya.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/banner-sunhouse.png"
+                alt="宮田和弥 Online Community Miyata Station"
+                width={288}
+                height={48}
+                className="w-full h-14 object-contain object-left invert"
+              />
+            </a>
           </div>
-        )}
-
-        {section === "forms" && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-              メッセージ募集
-            </h2>
-            <GoogleFormLink forms={messageForms} />
+          <div className="w-72 shrink-0">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              MIYATA KAZUYA Official Site
+            </p>
+            <a
+              href="https://www.miyata-kazuya.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/banner-miyata.png"
+                alt="宮田和弥 オフィシャルサイト"
+                width={288}
+                height={48}
+                className="w-full h-14 object-contain object-left invert"
+              />
+            </a>
           </div>
-        )}
-
-        {section === "chat" && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-              タイムライン
-            </h2>
-            {(profile?.role === "admin" || profile?.role === "poster") && (
-              <ChatPostForm />
-            )}
-            {commentsOrdered.length > 0 ? (
-              <div className="space-y-6">
-                {commentsOrdered.map((post) => (
-                  <ChatPost
-                    key={post.id}
-                    post={post}
-                    authorName={authorMap[post.author_id]}
-                    currentUserFullName={profile?.full_name}
-                    currentUserId={user.id}
-                    isAdmin={profile?.role === "admin"}
-                    isPoster={profile?.role === "poster"}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 text-center text-slate-600 dark:text-slate-400">
-                まだ投稿はありません
-              </div>
-            )}
+          <div className="w-72 shrink-0">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              JUN SKY WALKER(S) Official Site
+            </p>
+            <a
+              href="http://junskywalkers.jp/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/banner-junskywalkers.png"
+                alt="JUN SKY WALKER(S) オフィシャルサイト"
+                width={288}
+                height={48}
+                className="w-full h-14 object-contain object-left invert"
+              />
+            </a>
           </div>
-        )}
-      </main>
-    </div>
+        </div>
+      </div>
   );
 }

@@ -28,6 +28,15 @@ function parseForms(value: string | null): MessageForm[] {
 
 export default async function FormsPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from("user_section_views").upsert(
+      { user_id: user.id, section: "forms", last_viewed_at: new Date().toISOString() },
+      { onConflict: "user_id,section" }
+    );
+  }
   const { data: rows } = await supabase
     .from("site_config")
     .select("key, value")

@@ -2,17 +2,22 @@ import { createClient } from "@/lib/supabase/server";
 import { ChatPost } from "@/components/chat/ChatPost";
 import { ChatPostForm } from "@/components/chat/ChatPostForm";
 
-export default async function ChatPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DashboardChatPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) {
-    await supabase.from("user_section_views").upsert(
-      { user_id: user.id, section: "chat", last_viewed_at: new Date().toISOString() },
-      { onConflict: "user_id,section" }
-    );
-  }
+
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
   const { data: posts } = await supabase
     .from("admin_posts")
     .select(
@@ -41,15 +46,6 @@ export default async function ChatPage() {
   const authorMap = Object.fromEntries(
     authorProfiles?.map((p) => [p.id, p.full_name]) ?? []
   );
-
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-
   const commentsOrdered =
     posts?.map((p) => ({
       ...p,
@@ -68,20 +64,13 @@ export default async function ChatPage() {
     })) ?? [];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">お知らせ・チャット</h1>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">
-          {profile?.role === "admin" || profile?.role === "poster"
-            ? "お知らせを投稿し、会員のコメントを確認できます"
-            : "お知らせを確認し、コメントでやり取りできます"}
-        </p>
-      </div>
-
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+        タイムライン
+      </h2>
       {(profile?.role === "admin" || profile?.role === "poster") && (
         <ChatPostForm />
       )}
-
       {commentsOrdered.length > 0 ? (
         <div className="space-y-6">
           {commentsOrdered.map((post) => (
@@ -90,7 +79,7 @@ export default async function ChatPage() {
               post={post}
               authorName={authorMap[post.author_id]}
               currentUserFullName={profile?.full_name}
-              currentUserId={user?.id}
+              currentUserId={user.id}
               isAdmin={profile?.role === "admin"}
               isPoster={profile?.role === "poster"}
             />
@@ -98,7 +87,7 @@ export default async function ChatPage() {
         </div>
       ) : (
         <div className="p-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 text-center text-slate-600 dark:text-slate-400">
-          まだお知らせはありません
+          まだ投稿はありません
         </div>
       )}
     </div>

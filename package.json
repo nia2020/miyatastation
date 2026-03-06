@@ -9,6 +9,7 @@
     "db:migrate-onboarding": "node scripts/run-onboarding-migration.js",
     "db:migrate-birthday-celebrations": "node scripts/run-birthday-celebrations-migration.js",
     "db:migrate-profiles-select": "node scripts/run-profiles-select-migration.js",
+    "db:migrate-user-section-views": "node scripts/run-user-section-views-migration.js",
     "db:set-admin": "node scripts/set-admin.js",
     "build": "next build",
     "start": "next start",
