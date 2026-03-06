@@ -50,7 +50,7 @@ export async function updateSession(request: NextRequest) {
       Promise.race([
         supabase.auth.getUser(),
         new Promise<{ data: { user: null } }>((resolve) =>
-          setTimeout(() => resolve({ data: { user: null } }), 3000)
+          setTimeout(() => resolve({ data: { user: null } }), 1500)
         ),
       ]);
     const { data } = await getUserWithTimeout();

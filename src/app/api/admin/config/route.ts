@@ -50,6 +50,7 @@ export async function GET() {
       "message_collection_forms",
       "google_form_url",
       "message_collection_title",
+      "announcement",
     ]);
 
   if (error) {
@@ -74,7 +75,10 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ forms });
+  return NextResponse.json({
+    forms,
+    announcement: config?.announcement?.trim() ?? "",
+  });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -98,7 +102,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { forms } = body;
+  const { forms, announcement } = body;
 
   const validForms: MessageForm[] = Array.isArray(forms)
     ? forms
@@ -114,17 +118,26 @@ export async function PATCH(request: NextRequest) {
         .filter((f) => f.url)
     : [];
 
-  const { error } = await supabase.from("site_config").upsert(
+  const upserts: { key: string; value: string; updated_at: string }[] = [
     {
       key: "message_collection_forms",
       value: JSON.stringify(validForms),
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "key" }
-  );
+    {
+      key: "announcement",
+      value: typeof announcement === "string" ? String(announcement).trim() : "",
+      updated_at: new Date().toISOString(),
+    },
+  ];
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  for (const row of upserts) {
+    const { error } = await supabase.from("site_config").upsert(row, {
+      onConflict: "key",
+    });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ success: true });

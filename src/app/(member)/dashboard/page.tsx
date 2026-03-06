@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Calendar, MessageSquare, Hash, CreditCard, UserCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import type { Event } from "@/types/database";
 import { EventCard } from "@/components/events/EventCard";
 import { GoogleFormLink } from "@/components/forms/GoogleFormLink";
 import { ChatPost } from "@/components/chat/ChatPost";
@@ -42,6 +44,39 @@ const HUB_LINKS = [
   },
 ] as const;
 
+function parseMessageForms(configMap: Record<string, string | null> | null | undefined) {
+  let forms: { title: string; url: string; description?: string }[] = [];
+  try {
+    const parsed = configMap?.message_collection_forms?.trim();
+    if (parsed) {
+      const arr = JSON.parse(parsed) as unknown;
+      if (Array.isArray(arr)) {
+        forms = arr
+          .filter(
+            (f): f is { title: string; url: string; description?: string } =>
+              f &&
+              typeof f === "object" &&
+              typeof (f as { title: string; url: string }).title === "string" &&
+              typeof (f as { title: string; url: string }).url === "string"
+          )
+          .map((f) => ({
+            title: (f as { title: string; url: string; description?: string }).title,
+            url: (f as { title: string; url: string }).url,
+            description: typeof (f as { description?: string }).description === "string" ? (f as { description: string }).description : "",
+          }));
+      }
+    }
+  } catch {}
+  if (forms.length === 0 && configMap?.google_form_url?.trim()) {
+    forms = [{
+      title: configMap?.message_collection_title?.trim() || "メッセージ募集",
+      url: configMap.google_form_url,
+      description: "",
+    }];
+  }
+  return forms;
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -61,113 +96,118 @@ export default async function DashboardPage({
     .eq("id", user.id)
     .single();
 
-  const { data: upcomingEvents } = await supabase
-    .from("events")
-    .select("*")
-    .gte("event_date", new Date().toISOString())
-    .order("event_date", { ascending: true });
-
-  const { data: pastEvents } = await supabase
-    .from("events")
-    .select("*")
-    .lt("event_date", new Date().toISOString())
-    .order("event_date", { ascending: false })
-    .limit(5);
-
-  const { data: configRows } = await supabase
-    .from("site_config")
-    .select("key, value")
-    .in("key", [
-      "message_collection_forms",
-      "google_form_url",
-      "message_collection_title",
-    ]);
-
-  const configMap = configRows?.reduce(
-    (acc, r) => {
-      acc[r.key] = r.value;
-      return acc;
-    },
-    {} as Record<string, string | null>
-  );
-
+  // 表示セクションに応じて必要なデータのみ取得（パフォーマンス最適化）
+  let upcomingEvents: Event[] | null = null;
+  let pastEvents: Event[] | null = null;
   let messageForms: { title: string; url: string; description?: string }[] = [];
-  try {
-    const parsed = configMap?.message_collection_forms?.trim();
-    if (parsed) {
-      const arr = JSON.parse(parsed) as unknown;
-      if (Array.isArray(arr)) {
-        messageForms = arr
-          .filter(
-            (f): f is { title: string; url: string; description?: string } =>
-              f &&
-              typeof f === "object" &&
-              typeof (f as { title: string; url: string }).title === "string" &&
-              typeof (f as { title: string; url: string }).url === "string"
-          )
-          .map((f) => ({
-            title: (f as { title: string; url: string; description?: string }).title,
-            url: (f as { title: string; url: string }).url,
-            description: typeof (f as { description?: string }).description === "string" ? (f as { description: string }).description : "",
-          }));
-      }
-    }
-  } catch {}
-  if (messageForms.length === 0 && configMap?.google_form_url?.trim()) {
-    messageForms = [
-      {
-        title: configMap?.message_collection_title?.trim() || "メッセージ募集",
-        url: configMap.google_form_url,
-        description: "",
-      },
-    ];
+  let announcement = "";
+
+  if (section === "home") {
+    const { data: announcementRow } = await supabase
+      .from("site_config")
+      .select("value")
+      .eq("key", "announcement")
+      .maybeSingle();
+    announcement = announcementRow?.value?.trim() ?? "";
   }
+  let commentsOrdered: Array<{
+    id: string;
+    title: string;
+    content: string;
+    author_id: string;
+    created_at: string;
+    updated_at: string;
+    images?: string[];
+    comments: Array<{
+      id: string;
+      post_id: string;
+      user_id: string;
+      content: string;
+      created_at: string;
+      profiles: { full_name: string } | null;
+    }>;
+  }> = [];
+  let authorMap: Record<string, string> = {};
 
-  const { data: posts } = await supabase
-    .from("admin_posts")
-    .select(
+  if (section === "events") {
+    const [upcoming, past] = await Promise.all([
+      supabase
+        .from("events")
+        .select("*")
+        .gte("event_date", new Date().toISOString())
+        .order("event_date", { ascending: true }),
+      supabase
+        .from("events")
+        .select("*")
+        .lt("event_date", new Date().toISOString())
+        .order("event_date", { ascending: false })
+        .limit(5),
+    ]);
+    upcomingEvents = upcoming.data;
+    pastEvents = past.data;
+  } else if (section === "forms") {
+    const { data: configRows } = await supabase
+      .from("site_config")
+      .select("key, value")
+      .in("key", [
+        "message_collection_forms",
+        "google_form_url",
+        "message_collection_title",
+      ]);
+    const configMap = configRows?.reduce(
+      (acc, r) => {
+        acc[r.key] = r.value;
+        return acc;
+      },
+      {} as Record<string, string | null>
+    );
+    messageForms = parseMessageForms(configMap);
+  } else if (section === "chat") {
+    const { data: posts } = await supabase
+      .from("admin_posts")
+      .select(
+        `
+        *,
+        comments:post_comments(
+          id,
+          post_id,
+          user_id,
+          content,
+          created_at,
+          profiles(full_name)
+        )
       `
-      *,
-      comments:post_comments(
-        id,
-        post_id,
-        user_id,
-        content,
-        created_at,
-        profiles(full_name)
       )
-    `
-    )
-    .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false });
 
-  const authorIds = Array.from(new Set(posts?.map((p) => p.author_id) ?? []));
-  const { data: authorProfiles } =
-    authorIds.length > 0
-      ? await supabase
-          .from("profiles")
-          .select("id, full_name")
-          .in("id", authorIds)
-      : { data: [] };
-  const authorMap = Object.fromEntries(
-    authorProfiles?.map((p) => [p.id, p.full_name]) ?? []
-  );
-
-  const commentsOrdered =
-    posts?.map((p) => ({
-      ...p,
-      comments:
-        (p.comments as Array<{
-          id: string;
-          post_id: string;
-          user_id: string;
-          content: string;
-          created_at: string;
-          profiles: { full_name: string } | null;
-        }>)?.sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        ) ?? [],
-    })) ?? [];
+    const authorIds = Array.from(new Set(posts?.map((p) => p.author_id) ?? []));
+    const { data: authorProfiles } =
+      authorIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", authorIds)
+        : { data: [] };
+    authorMap = Object.fromEntries(
+      authorProfiles?.map((p) => [p.id, p.full_name]) ?? []
+    );
+    commentsOrdered =
+      posts?.map((p) => ({
+        ...p,
+        comments:
+          (p.comments as Array<{
+            id: string;
+            post_id: string;
+            user_id: string;
+            content: string;
+            created_at: string;
+            profiles: { full_name: string } | null;
+          }>)?.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          ) ?? [],
+      })) ?? [];
+  }
 
   return (
     <div className="flex gap-8">
@@ -177,6 +217,16 @@ export default async function DashboardPage({
       <main className="min-w-0 flex-1">
         {section === "home" && (
           <div className="space-y-8">
+            {announcement && (
+              <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
+                  📢 運営からのお知らせ
+                </p>
+                <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                  {announcement}
+                </p>
+              </div>
+            )}
             <div>
               <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
                 会員TOP
@@ -205,6 +255,65 @@ export default async function DashboardPage({
                   </div>
                 </Link>
               ))}
+            </div>
+            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-wrap gap-8 items-start">
+              <div className="w-72 shrink-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                  Online Community Miyata Station
+                </p>
+                <a
+                  href="https://sunhouse-miyata-kazuya.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/banner-sunhouse.png"
+                    alt="宮田和弥 Online Community Miyata Station"
+                    width={288}
+                    height={48}
+                    className="w-full h-14 object-contain object-left invert"
+                  />
+                </a>
+              </div>
+              <div className="w-72 shrink-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                  MIYATA KAZUYA Official Site
+                </p>
+                <a
+                  href="https://www.miyata-kazuya.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/banner-miyata.png"
+                    alt="宮田和弥 オフィシャルサイト"
+                    width={288}
+                    height={48}
+                    className="w-full h-14 object-contain object-left invert"
+                  />
+                </a>
+              </div>
+              <div className="w-72 shrink-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                  JUN SKY WALKER(S) Official Site
+                </p>
+                <a
+                  href="http://junskywalkers.jp/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  <Image
+                    src="/banner-junskywalkers.png"
+                    alt="JUN SKY WALKER(S) オフィシャルサイト"
+                    width={288}
+                    height={48}
+                    className="w-full h-14 object-contain object-left invert"
+                  />
+                </a>
+              </div>
             </div>
           </div>
         )}
