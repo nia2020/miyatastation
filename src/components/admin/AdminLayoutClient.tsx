@@ -30,14 +30,14 @@ export function AdminLayoutClient({ role, children }: AdminLayoutClientProps) {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/dashboard"
-            className="whitespace-nowrap px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 font-medium"
+            className="whitespace-nowrap px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-amber-300 dark:border-amber-700 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium"
           >
             ダッシュボードに戻る
           </Link>
           {isPoster ? (
             <Link
               href="/admin/birthdays"
-              className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+              className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
             >
               お誕生日一覧
             </Link>
@@ -45,37 +45,37 @@ export function AdminLayoutClient({ role, children }: AdminLayoutClientProps) {
             <>
               <Link
                 href="/admin"
-                className="whitespace-nowrap px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-200 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded-lg hover:bg-amber-300 dark:hover:bg-amber-800/50 font-medium"
               >
                 管理TOP
               </Link>
               <Link
                 href="/admin/users"
-                className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
               >
                 アカウント発行
               </Link>
               <Link
                 href="/admin/events"
-                className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
               >
                 イベント管理
               </Link>
               <Link
                 href="/admin/forms"
-                className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
               >
                 フォーム管理
               </Link>
               <Link
                 href="/admin/birthdays"
-                className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
               >
                 お誕生日一覧
               </Link>
               <Link
                 href="/admin/archive-videos"
-                className="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 font-medium"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
               >
                 アーカイブ動画
               </Link>

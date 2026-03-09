@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { id, title, content, images } = body;
+  const { id, title, content, images, published_at, channel } = body;
 
   if (!title || !content) {
     return NextResponse.json(
@@ -37,13 +37,25 @@ export async function POST(request: NextRequest) {
     ? images.filter((u: unknown) => typeof u === "string" && u.startsWith("http"))
     : [];
 
-  const postData = {
+  const postData: Record<string, unknown> = {
     title,
     content,
     images: imageUrls,
     author_id: user.id,
     updated_at: new Date().toISOString(),
   };
+
+  const validChannel = channel === "mk-room" ? "mk-room" : "feed";
+  if (!id) {
+    postData.channel = validChannel;
+  }
+
+  if (published_at !== undefined) {
+    postData.published_at =
+      published_at && published_at.trim()
+        ? new Date(published_at).toISOString()
+        : null;
+  }
 
   if (id) {
     // 投稿者は自分の投稿のみ編集可能

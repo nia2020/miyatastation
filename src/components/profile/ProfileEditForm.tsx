@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface ProfileEditFormProps {
   initialNickname: string;
   initialBirthday: string;
   initialBirthdayWishName: string;
+  initialAvatarUrl?: string;
+  canSetAvatar?: boolean;
 }
 
 /** 誕生日の2週間前以内かどうか（読んで欲しい名前の編集不可期間） */
@@ -28,12 +31,17 @@ export function ProfileEditForm({
   initialNickname,
   initialBirthday,
   initialBirthdayWishName,
+  initialAvatarUrl = "",
+  canSetAvatar = false,
 }: ProfileEditFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [nickname, setNickname] = useState(initialNickname);
   const [birthdayWishName, setBirthdayWishName] = useState(
     initialBirthdayWishName
   );
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -42,6 +50,50 @@ export function ProfileEditForm({
     () => isWithinTwoWeeksBeforeBirthday(initialBirthday),
     [initialBirthday]
   );
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/profile/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "アップロードに失敗しました");
+      }
+      const { url } = await res.json();
+      setAvatarUrl(url);
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "アップロードに失敗しました");
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    if (!confirm("アイコン画像を削除しますか？")) return;
+    setAvatarUploading(true);
+    try {
+      const res = await fetch("/api/profile/avatar", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "削除に失敗しました");
+      }
+      setAvatarUrl("");
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "削除に失敗しました");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +141,59 @@ export function ProfileEditForm({
         {success && (
           <div className="rounded-lg bg-green-50 dark:bg-green-900/30 p-3 text-sm text-green-700 dark:text-green-400">
             保存しました
+          </div>
+        )}
+
+        {canSetAvatar && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              アイコン画像
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="shrink-0 w-20 h-20 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt="アイコン"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl text-slate-400">?</span>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 disabled:opacity-50"
+                >
+                  {avatarUploading ? "アップロード中..." : "画像を選択"}
+                </button>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleAvatarRemove}
+                    disabled={avatarUploading}
+                    className="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
+                  >
+                    削除
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              会員TOPの挨拶部分に表示されます
+            </p>
           </div>
         )}
 

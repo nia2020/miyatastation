@@ -4,7 +4,7 @@ import { ChatPostForm } from "@/components/chat/ChatPostForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardChatPage() {
+export default async function MkRoomPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,7 +38,7 @@ export default async function DashboardChatPage() {
       likes:post_likes(id, user_id)
     `
     )
-    .eq("channel", "feed")
+    .eq("channel", "mk-room")
     .or(`published_at.is.null,published_at.lte.${now}`)
     .order("created_at", { ascending: false });
 
@@ -60,7 +60,7 @@ export default async function DashboardChatPage() {
             likes:post_likes(id, user_id)
           `
           )
-          .eq("channel", "feed")
+          .eq("channel", "mk-room")
           .not("published_at", "is", null)
           .gt("published_at", now)
           .order("published_at", { ascending: true })
@@ -127,11 +127,11 @@ export default async function DashboardChatPage() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-        フィード
+        MK ROOM
       </h2>
       {(profile?.role === "admin" || profile?.role === "poster") && (
         <ChatPostForm
-          channel="feed"
+          channel="mk-room"
           currentUserNickname={
             profile?.nickname?.trim() || profile?.full_name || "管理者"
           }

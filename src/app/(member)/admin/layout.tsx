@@ -33,9 +33,11 @@ export default async function AdminLayout({
     }
 
     return (
-      <AdminLayoutClient role={profile?.role ?? "member"}>
-        {children}
-      </AdminLayoutClient>
+      <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -mt-6 sm:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8 bg-amber-50/80 dark:bg-amber-950/25 border-t-4 border-amber-500 dark:border-amber-600">
+        <AdminLayoutClient role={profile?.role ?? "member"}>
+          {children}
+        </AdminLayoutClient>
+      </div>
     );
   } catch (err) {
     console.error("Admin layout error:", err);

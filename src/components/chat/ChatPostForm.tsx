@@ -2,16 +2,28 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface ChatPostFormProps {
   onPostCreated?: () => void;
+  currentUserNickname?: string;
+  currentUserAvatarUrl?: string | null;
+  /** 投稿先チャンネル: feed=フィード, mk-room=MK ROOM */
+  channel?: "feed" | "mk-room";
 }
 
-export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
+export function ChatPostForm({
+  onPostCreated,
+  currentUserNickname = "管理者",
+  currentUserAvatarUrl,
+  channel = "feed",
+}: ChatPostFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -55,9 +67,24 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const getDefaultScheduledAt = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 30);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || loading) return;
+    if (isScheduled && !scheduledAt.trim()) {
+      alert("予約日時を選択してください");
+      return;
+    }
+    if (isScheduled && new Date(scheduledAt) <= new Date()) {
+      alert("予約日時は現在より後の時刻を指定してください");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -68,6 +95,8 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
           title: title.trim(),
           content: content.trim(),
           images,
+          published_at: isScheduled && scheduledAt ? scheduledAt : null,
+          channel,
         }),
       });
 
@@ -79,6 +108,8 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
       setTitle("");
       setContent("");
       setImages([]);
+      setIsScheduled(false);
+      setScheduledAt("");
       setIsExpanded(false);
       onPostCreated?.();
       router.refresh();
@@ -100,7 +131,31 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
         </button>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-200">新規投稿</h3>
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+              {currentUserAvatarUrl ? (
+                <Image
+                  src={currentUserAvatarUrl}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-lg text-slate-500 dark:text-slate-400">
+                  ?
+                </span>
+              )}
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-800 dark:text-slate-200">
+                新規投稿
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                投稿者: {currentUserNickname}
+              </p>
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               タイトル
@@ -124,6 +179,38 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
               placeholder="会員へのお知らせ内容"
               className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
             />
+          </div>
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isScheduled}
+                onChange={(e) => {
+                  setIsScheduled(e.target.checked);
+                  if (e.target.checked && !scheduledAt) {
+                    setScheduledAt(getDefaultScheduledAt());
+                  }
+                }}
+                className="rounded border-slate-300 dark:border-slate-600"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                予約投稿する
+              </span>
+            </label>
+            {isScheduled && (
+              <div className="mt-2">
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                  className="mt-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 text-sm"
+                />
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  指定した日時に自動で公開されます
+                </p>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -169,10 +256,19 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
           <div className="flex gap-2">
             <button
               type="submit"
-              disabled={loading || !title.trim() || !content.trim()}
+              disabled={
+                loading ||
+                !title.trim() ||
+                !content.trim() ||
+                (isScheduled && !scheduledAt.trim())
+              }
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
             >
-              {loading ? "投稿中..." : "投稿"}
+              {loading
+                ? "投稿中..."
+                : isScheduled
+                  ? "予約する"
+                  : "投稿"}
             </button>
             <button
               type="button"
@@ -181,6 +277,8 @@ export function ChatPostForm({ onPostCreated }: ChatPostFormProps) {
                 setTitle("");
                 setContent("");
                 setImages([]);
+                setIsScheduled(false);
+                setScheduledAt("");
               }}
               className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500"
             >

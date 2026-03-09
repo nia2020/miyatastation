@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Event } from "@/types/database";
+import { isEventDeletable } from "@/lib/events";
 
 interface EventsAdminProps {
   events: Event[];
@@ -76,7 +77,10 @@ export function EventsAdmin({ events }: EventsAdminProps) {
         body: JSON.stringify({ id }),
       });
 
-      if (!res.ok) throw new Error("削除に失敗しました");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "削除に失敗しました");
+      }
 
       setEventList((prev) => prev.filter((e) => e.id !== id));
       setEditing(null);
@@ -234,12 +238,23 @@ export function EventsAdmin({ events }: EventsAdminProps) {
               >
                 編集
               </button>
-              <button
-                onClick={() => handleDelete(event.id)}
-                className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-              >
-                削除
-              </button>
+              {isEventDeletable(event.event_date) ? (
+                <button
+                  onClick={() => handleDelete(event.id)}
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                >
+                  削除
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="text-sm text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                  title="イベント日時の翌日 0:00 以降に削除可能です"
+                >
+                  削除
+                </button>
+              )}
             </div>
           </div>
         ))}

@@ -118,23 +118,34 @@ export async function PATCH(request: NextRequest) {
         .filter((f) => f.url)
     : [];
 
-  const upserts: { key: string; value: string; updated_at: string }[] = [
-    {
-      key: "message_collection_forms",
-      value: JSON.stringify(validForms),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      key: "announcement",
-      value: typeof announcement === "string" ? String(announcement).trim() : "",
-      updated_at: new Date().toISOString(),
-    },
-  ];
+  const newFormsValue = JSON.stringify(validForms);
+  const newAnnouncementValue = typeof announcement === "string" ? String(announcement).trim() : "";
 
-  for (const row of upserts) {
-    const { error } = await supabase.from("site_config").upsert(row, {
-      onConflict: "key",
-    });
+  const { data: existingRows } = await supabase
+    .from("site_config")
+    .select("key, value")
+    .in("key", ["message_collection_forms", "announcement"]);
+
+  const existingMap = Object.fromEntries(
+    (existingRows ?? []).map((r) => [r.key, r.value ?? ""])
+  );
+  const now = new Date().toISOString();
+
+  if (existingMap.message_collection_forms !== newFormsValue) {
+    const { error } = await supabase.from("site_config").upsert(
+      { key: "message_collection_forms", value: newFormsValue, updated_at: now },
+      { onConflict: "key" }
+    );
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
+
+  if (existingMap.announcement !== newAnnouncementValue) {
+    const { error } = await supabase.from("site_config").upsert(
+      { key: "announcement", value: newAnnouncementValue, updated_at: now },
+      { onConflict: "key" }
+    );
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

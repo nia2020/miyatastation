@@ -94,6 +94,24 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "IDが必要です" }, { status: 400 });
   }
 
+  const { data: event } = await supabase
+    .from("events")
+    .select("event_date")
+    .eq("id", id)
+    .single();
+
+  if (!event) {
+    return NextResponse.json({ error: "イベントが見つかりません" }, { status: 404 });
+  }
+
+  const { isEventDeletable } = await import("@/lib/events");
+  if (!isEventDeletable(event.event_date)) {
+    return NextResponse.json(
+      { error: "イベント日時の翌日 0:00 以降に削除可能です" },
+      { status: 403 }
+    );
+  }
+
   const { error } = await supabase.from("events").delete().eq("id", id);
 
   if (error) {

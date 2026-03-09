@@ -14,11 +14,8 @@ interface MemberHeaderProps {
   userEmail?: string | null;
 }
 
-export function MemberHeader({ profile, userEmail }: MemberHeaderProps) {
+export function MemberHeader({ profile }: MemberHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const displayName =
-    profile?.nickname?.trim() || profile?.full_name || userEmail || "";
 
   return (
     <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
@@ -62,6 +59,12 @@ export function MemberHeader({ profile, userEmail }: MemberHeaderProps) {
             >
               デジタル会員証
             </Link>
+            <Link
+              href="/profile"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium whitespace-nowrap"
+            >
+              プロフィール編集
+            </Link>
             {profile?.role === "admin" && (
               <Link
                 href="/admin"
@@ -78,9 +81,6 @@ export function MemberHeader({ profile, userEmail }: MemberHeaderProps) {
                 お誕生日一覧
               </Link>
             )}
-            <span className="text-sm text-slate-600 dark:text-slate-400 truncate max-w-[120px] lg:max-w-[160px]">
-              {displayName}
-            </span>
             <form action="/api/auth/signout" method="post" className="shrink-0">
               <button
                 type="submit"
@@ -125,6 +125,13 @@ export function MemberHeader({ profile, userEmail }: MemberHeaderProps) {
               >
                 デジタル会員証
               </Link>
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-3 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
+              >
+                プロフィール編集
+              </Link>
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"
@@ -143,10 +150,7 @@ export function MemberHeader({ profile, userEmail }: MemberHeaderProps) {
                   お誕生日一覧
                 </Link>
               )}
-              <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 mt-2 pt-3">
-                {displayName}
-              </div>
-              <form action="/api/auth/signout" method="post">
+              <form action="/api/auth/signout" method="post" className="border-t border-slate-200 dark:border-slate-700 mt-2 pt-3">
                 <button
                   type="submit"
                   className="w-full text-left px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"

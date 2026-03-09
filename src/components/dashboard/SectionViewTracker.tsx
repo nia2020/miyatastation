@@ -1,10 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import type { SectionId } from "@/contexts/NewFlagsContext";
+import { useClearSectionViewed } from "@/contexts/NewFlagsContext";
 
-const SECTION_MAP: Record<string, string> = {
+const SECTION_MAP: Record<string, SectionId> = {
   "/dashboard/events": "events",
   "/dashboard/forms": "forms",
   "/dashboard/chat": "chat",
@@ -12,8 +13,8 @@ const SECTION_MAP: Record<string, string> = {
 
 export function SectionViewTracker() {
   const pathname = usePathname();
-  const router = useRouter();
   const trackedRef = useRef<string | null>(null);
+  const clearSectionViewed = useClearSectionViewed();
 
   useEffect(() => {
     const section = SECTION_MAP[pathname];
@@ -27,12 +28,12 @@ export function SectionViewTracker() {
       });
       if (res.ok) {
         trackedRef.current = pathname;
-        router.refresh();
+        clearSectionViewed?.(section);
       }
     };
 
     record();
-  }, [pathname, router]);
+  }, [pathname, clearSectionViewed]);
 
   return null;
 }

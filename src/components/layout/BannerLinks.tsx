@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export function BannerLinks() {
   return (
-    <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8 items-stretch sm:items-start">
-      <div className="w-full sm:w-72 min-w-0 shrink-0">
+    <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-600 grid grid-cols-3 gap-6">
+      <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           Online Community Miyata Station
         </p>
@@ -22,7 +22,7 @@ export function BannerLinks() {
           />
         </a>
       </div>
-      <div className="w-full sm:w-72 min-w-0 shrink-0">
+      <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           MIYATA KAZUYA Official Site
         </p>
@@ -41,7 +41,7 @@ export function BannerLinks() {
           />
         </a>
       </div>
-      <div className="w-full sm:w-72 min-w-0 shrink-0">
+      <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           JUN SKY WALKER(S) Official Site
         </p>

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { DashboardShell } from "./DashboardShell";
+import { NewFlagsProvider } from "@/contexts/NewFlagsContext";
 
 interface MemberContentWrapperProps {
   children: React.ReactNode;
@@ -18,5 +19,9 @@ export function MemberContentWrapper({
     return <>{children}</>;
   }
 
-  return <DashboardShell newFlags={newFlags}>{children}</DashboardShell>;
+  return (
+    <NewFlagsProvider newFlags={newFlags}>
+      <DashboardShell newFlags={newFlags}>{children}</DashboardShell>
+    </NewFlagsProvider>
+  );
 }

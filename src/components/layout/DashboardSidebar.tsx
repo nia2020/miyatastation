@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Home,
   Calendar,
@@ -8,23 +9,40 @@ import {
   UserCircle,
   Video,
 } from "lucide-react";
+import { useNewFlags } from "@/contexts/NewFlagsContext";
+
+function MiyataLogoIcon({ className }: { className?: string }) {
+  return (
+    <Image
+      src="/logo.png"
+      alt=""
+      width={80}
+      height={80}
+      quality={90}
+      className={`shrink-0 rounded-full object-cover object-left h-5 w-5 ${className ?? ""}`}
+      aria-hidden
+    />
+  );
+}
 
 const SECTIONS = [
   { id: "home", label: "会員TOP", href: "/dashboard", icon: Home },
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
   { id: "forms", label: "メッセージ募集", href: "/dashboard/forms", icon: MessageSquare },
-  { id: "chat", label: "タイムライン", href: "/dashboard/chat", icon: Hash },
+  { id: "chat", label: "フィード", href: "/dashboard/chat", icon: Hash },
 ] as const;
 
 const PAGES = [
   { id: "member-card", label: "デジタル会員証", href: "/member-card", icon: CreditCard },
   { id: "profile", label: "プロフィール編集", href: "/profile", icon: UserCircle },
+  { id: "mk-room", label: "MK ROOM", href: "/dashboard/mk-room", icon: MiyataLogoIcon },
   { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
 ] as const;
 
 interface DashboardSidebarProps {
-  currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos";
+  currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos" | "mk-room";
   currentSection?: string;
+  /** @deprecated useNewFlags から取得するため未使用。後方互換のため残す */
   newFlags?: { events?: boolean; forms?: boolean; chat?: boolean };
   /** モバイルドロワー用：リンククリック時に閉じるコールバック */
   onLinkClick?: () => void;
@@ -33,9 +51,9 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({
   currentPage = "dashboard",
   currentSection,
-  newFlags,
   onLinkClick,
 }: DashboardSidebarProps) {
+  const newFlags = useNewFlags();
   return (
     <aside className="lg:w-48 shrink-0">
       <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">ダッシュボード</h1>
@@ -43,9 +61,9 @@ export function DashboardSidebar({
       <nav className="mt-4 lg:mt-6 flex flex-col gap-1">
         {SECTIONS.map(({ id, label, href, icon: Icon }) => {
           const isNew =
-            (id === "events" && newFlags?.events) ||
-            (id === "forms" && newFlags?.forms) ||
-            (id === "chat" && newFlags?.chat);
+            (id === "events" && newFlags.events) ||
+            (id === "forms" && newFlags.forms) ||
+            (id === "chat" && newFlags.chat);
           return (
             <Link
               key={id}

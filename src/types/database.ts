@@ -19,6 +19,7 @@ export interface Database {
           nickname: string | null;
           birthday: string | null;
           birthday_wish_name: string | null;
+          avatar_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -31,6 +32,7 @@ export interface Database {
           nickname?: string | null;
           birthday?: string | null;
           birthday_wish_name?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -43,6 +45,7 @@ export interface Database {
           nickname?: string | null;
           birthday?: string | null;
           birthday_wish_name?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -144,6 +147,8 @@ export interface Database {
           content: string;
           author_id: string;
           images: string[];
+          published_at: string | null;
+          channel: "feed" | "mk-room";
           created_at: string;
           updated_at: string;
         };
@@ -153,6 +158,8 @@ export interface Database {
           content: string;
           author_id: string;
           images?: string[];
+          published_at?: string | null;
+          channel?: "feed" | "mk-room";
           created_at?: string;
           updated_at?: string;
         };
@@ -162,8 +169,30 @@ export interface Database {
           content?: string;
           author_id?: string;
           images?: string[];
+          published_at?: string | null;
+          channel?: "feed" | "mk-room";
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      post_likes: {
+        Row: {
+          id: string;
+          post_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          user_id?: string;
+          created_at?: string;
         };
       };
       post_comments: {
@@ -228,5 +257,6 @@ export type FormTheme = Database["public"]["Tables"]["form_themes"]["Row"];
 export type FormSubmission =
   Database["public"]["Tables"]["form_submissions"]["Row"];
 export type AdminPost = Database["public"]["Tables"]["admin_posts"]["Row"];
+export type PostLike = Database["public"]["Tables"]["post_likes"]["Row"];
 export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];
 export type ArchiveVideo = Database["public"]["Tables"]["archive_videos"]["Row"];

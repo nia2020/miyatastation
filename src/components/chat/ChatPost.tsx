@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Heart } from "lucide-react";
 
 /** テキスト内のURLをリンクに変換 */
 function linkify(text: string) {
@@ -35,6 +37,7 @@ type PostWithComments = {
   author_id: string;
   created_at: string;
   updated_at: string;
+  published_at?: string | null;
   images?: string[];
   comments: Array<{
     id: string;
@@ -42,17 +45,21 @@ type PostWithComments = {
     user_id: string;
     content: string;
     created_at: string;
-    profiles: { full_name: string } | null;
+    profiles: { nickname: string | null; avatar_url: string | null } | null;
   }>;
+  likes?: Array<{ id: string; user_id: string }>;
 };
 
 interface ChatPostProps {
   post: PostWithComments;
   authorName?: string | null;
-  currentUserFullName?: string;
+  authorAvatarUrl?: string | null;
+  currentUserNickname?: string;
+  currentUserAvatarUrl?: string | null;
   currentUserId?: string;
   isAdmin?: boolean;
   isPoster?: boolean;
+  isScheduled?: boolean;
   onPostUpdated?: () => void;
   onPostDeleted?: () => void;
 }
@@ -60,10 +67,13 @@ interface ChatPostProps {
 export function ChatPost({
   post,
   authorName,
-  currentUserFullName,
+  authorAvatarUrl,
+  currentUserNickname,
+  currentUserAvatarUrl,
   currentUserId,
   isAdmin,
   isPoster,
+  isScheduled = false,
   onPostUpdated,
   onPostDeleted,
 }: ChatPostProps) {
@@ -79,8 +89,22 @@ export function ChatPost({
   const [editImages, setEditImages] = useState<string[]>(
     Array.isArray(post.images) ? post.images : []
   );
+  const [editPublishedAt, setEditPublishedAt] = useState<string>(
+    post.published_at ? post.published_at.slice(0, 16) : ""
+  );
   const [uploading, setUploading] = useState(false);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const likes = post.likes ?? [];
+  const likeCount = likes.length;
+  const isLiked = currentUserId
+    ? likes.some((l) => l.user_id === currentUserId)
+    : false;
+  const [optimisticLiked, setOptimisticLiked] = useState(isLiked);
+  const [optimisticCount, setOptimisticCount] = useState(likeCount);
+
+  const publishedAtChanged =
+    (editPublishedAt ? editPublishedAt : null) !==
+    (post.published_at ? post.published_at.slice(0, 16) : null);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,9 +128,13 @@ export function ChatPost({
         ...prev,
         {
           ...comment,
-          profiles: currentUserFullName
-            ? { full_name: currentUserFullName }
-            : null,
+          profiles:
+            currentUserNickname || currentUserAvatarUrl
+              ? {
+                  nickname: currentUserNickname ?? null,
+                  avatar_url: currentUserAvatarUrl ?? null,
+                }
+              : null,
         },
       ]);
       setNewComment("");
@@ -162,10 +190,15 @@ export function ChatPost({
     if (
       (editTitle === post.title &&
         editContent === post.content &&
-        !imagesChanged) ||
+        !imagesChanged &&
+        !publishedAtChanged) ||
       loading
     )
       return;
+    if (editPublishedAt && new Date(editPublishedAt) <= new Date()) {
+      alert("予約日時は現在より後の時刻を指定してください");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/admin/chat", {
@@ -176,6 +209,7 @@ export function ChatPost({
           title: editTitle.trim(),
           content: editContent.trim(),
           images: editImages,
+          published_at: editPublishedAt.trim() || null,
         }),
       });
       if (!res.ok) {
@@ -209,6 +243,35 @@ export function ChatPost({
       router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "削除に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleLike = async () => {
+    if (!currentUserId || loading) return;
+
+    setLoading(true);
+    const prevLiked = optimisticLiked;
+    const prevCount = optimisticCount;
+    setOptimisticLiked(!prevLiked);
+    setOptimisticCount(prevLiked ? prevCount - 1 : prevCount + 1);
+
+    try {
+      const res = await fetch("/api/chat/likes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ post_id: post.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "いいねの処理に失敗しました");
+      }
+    } catch (err) {
+      setOptimisticLiked(prevLiked);
+      setOptimisticCount(prevCount);
+      alert(err instanceof Error ? err.message : "いいねの処理に失敗しました");
     } finally {
       setLoading(false);
     }
@@ -253,6 +316,23 @@ export function ChatPost({
                 rows={4}
                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
               />
+              {(isScheduled || editPublishedAt) && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    予約公開日時
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={editPublishedAt}
+                    onChange={(e) => setEditPublishedAt(e.target.value)}
+                    min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    空にすると即時公開になります
+                  </p>
+                </div>
+              )}
               <div>
                 <input
                   ref={editFileInputRef}
@@ -302,7 +382,8 @@ export function ChatPost({
                     (editTitle === post.title &&
                       editContent === post.content &&
                       JSON.stringify(editImages) ===
-                        JSON.stringify(postImages))
+                        JSON.stringify(postImages) &&
+                      !publishedAtChanged)
                   }
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm disabled:opacity-50"
                 >
@@ -315,6 +396,9 @@ export function ChatPost({
                     setEditTitle(post.title);
                     setEditContent(post.content);
                     setEditImages(postImages);
+                    setEditPublishedAt(
+                      post.published_at ? post.published_at.slice(0, 16) : ""
+                    );
                   }}
                   className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 text-sm"
                 >
@@ -324,13 +408,37 @@ export function ChatPost({
             </div>
           ) : (
             <>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                {post.title}
-              </h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {new Date(post.created_at).toLocaleString("ja-JP")}
-                <span className="ml-2">{authorName || "管理者"}</span>
-              </p>
+              {isScheduled && (
+                <span className="inline-block px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded mb-2">
+                  予約済み: {post.published_at ? new Date(post.published_at).toLocaleString("ja-JP") : ""}
+                </span>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+                  {authorAvatarUrl ? (
+                    <Image
+                      src={authorAvatarUrl}
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg text-slate-500 dark:text-slate-400">
+                      ?
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                    {post.title}
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {new Date(post.created_at).toLocaleString("ja-JP")}
+                    <span className="ml-2">{authorName || "管理者"}</span>
+                  </p>
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -378,6 +486,29 @@ export function ChatPost({
         </>
       )}
 
+      {!editing && currentUserId && !isScheduled && (
+        <div className="mt-4 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleToggleLike}
+            disabled={loading}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors disabled:opacity-50 ${
+              optimisticLiked
+                ? "text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
+                : "text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            }`}
+          >
+            <Heart
+              className="w-4 h-4"
+              fill={optimisticLiked ? "currentColor" : "none"}
+              strokeWidth={2}
+            />
+            <span>{optimisticCount}</span>
+          </button>
+        </div>
+      )}
+
+      {!isScheduled && (
       <section className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-600">
         <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
           コメント ({comments.length})
@@ -388,14 +519,31 @@ export function ChatPost({
             const canDelete =
               isAdmin ||
               (currentUserId && comment.user_id === currentUserId);
+            const commenterName =
+              comment.profiles?.nickname?.trim() || "会員";
             return (
               <div
                 key={comment.id}
-                className="flex items-start justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+                className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
               >
+                <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+                  {comment.profiles?.avatar_url ? (
+                    <Image
+                      src={comment.profiles.avatar_url}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      ?
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {comment.profiles?.full_name ?? "会員"}
+                    {commenterName}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
                     {linkify(comment.content)}
@@ -435,6 +583,7 @@ export function ChatPost({
           </button>
         </form>
       </section>
+      )}
     </article>
   );
 }
