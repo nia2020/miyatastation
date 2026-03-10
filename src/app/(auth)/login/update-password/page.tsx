@@ -16,11 +16,22 @@ export default function UpdatePasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkSession = async () => {
+    const init = async () => {
+      // PKCE フロー: URL に code がある場合は auth/callback で交換してから戻る
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        if (code) {
+          const callbackUrl = `/auth/callback?code=${encodeURIComponent(code)}&next=/login/update-password`;
+          window.location.replace(callbackUrl);
+          return;
+        }
+      }
+
       const supabase = createClient();
 
-      // Supabase が URL のハッシュからトークンを処理するまで少し待つ
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Implicit フロー: ハッシュからトークン処理を待つ
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const {
         data: { session },
@@ -35,7 +46,7 @@ export default function UpdatePasswordPage() {
       setChecking(false);
     };
 
-    checkSession();
+    init();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {

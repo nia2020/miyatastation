@@ -1,8 +1,19 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
+type Props = { searchParams: Promise<{ code?: string; next?: string }> };
+
+export default async function LoginPage({ searchParams }: Props) {
+  const params = await searchParams;
+  // パスワードリセットで /login に飛ばされた場合、code を auth/callback で交換
+  if (params.code && params.next) {
+    redirect(
+      `/auth/callback?code=${encodeURIComponent(params.code)}&next=${encodeURIComponent(params.next)}`
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
       <div className="w-full max-w-md">
