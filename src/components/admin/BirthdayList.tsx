@@ -258,7 +258,7 @@ export function BirthdayList() {
                   <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
                     {b.nickname || "—"}
                   </td>
-                  <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
+                  <td className="py-3 px-4 font-bold text-amber-600 dark:text-amber-400">
                     {b.birthday_wish_name || "—"}
                   </td>
                   <td className="py-3 px-4">
