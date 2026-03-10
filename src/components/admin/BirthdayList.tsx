@@ -240,7 +240,7 @@ export function BirthdayList() {
                 <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
                   ニックネーム
                 </th>
-                <th className="text-left py-3 px-4 font-bold text-indigo-600 dark:text-indigo-400">
+                <th className="text-left py-3 px-4 font-bold text-amber-600 dark:text-amber-400">
                   お祝い用名前
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
