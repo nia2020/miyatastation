@@ -8,7 +8,9 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/auth");
   const isChangePasswordPage = pathname === "/change-password";
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -45,6 +45,7 @@ export function UsersAdmin() {
     results: { email: string; success: boolean; error?: string }[];
     summary: { success: number; failed: number; total: number };
   } | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setListError(null);
@@ -167,6 +168,32 @@ export function UsersAdmin() {
       fetchUsers();
     } catch (err) {
       alert(err instanceof Error ? err.message : "更新に失敗しました");
+    }
+  };
+
+  const handleDelete = async (u: User) => {
+    if (
+      !confirm(
+        `「${u.full_name}」（${u.email}）のアカウントを削除しますか？この操作は取り消せません。`
+      )
+    )
+      return;
+    setDeletingUserId(u.id);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: u.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "削除に失敗しました");
+      setSuccess(`「${u.full_name}」のアカウントを削除しました`);
+      setEditingUser((prev) => (prev?.id === u.id ? null : prev));
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "削除に失敗しました");
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -425,7 +452,7 @@ export function UsersAdmin() {
           アカウント一覧
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-          パスワードは「リセット」で新しいパスワードを発行し表示します。会員番号・役割・登録日は「編集」で変更できます。
+          パスワードは「リセット」で新しいパスワードを発行し表示します。会員番号・役割・登録日は「編集」で変更できます。不要なアカウントは「削除」で削除できます（取り消し不可）。
         </p>
         {loadingList ? (
           <p className="text-slate-500 dark:text-slate-400">読み込み中...</p>
@@ -477,7 +504,7 @@ export function UsersAdmin() {
                   <th className="text-left py-3 px-4 font-medium text-slate-800">
                     パスワード
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200 w-24">
+                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
                     操作
                   </th>
                 </tr>
@@ -602,13 +629,23 @@ export function UsersAdmin() {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleStartEdit(u)}
-                          className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
-                        >
-                          編集
-                        </button>
+                        <div className="flex gap-2 items-center">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(u)}
+                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                          >
+                            編集
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(u)}
+                            disabled={deletingUserId === u.id}
+                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
+                          >
+                            {deletingUserId === u.id ? "削除中..." : "削除"}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

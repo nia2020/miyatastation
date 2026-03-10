@@ -263,3 +263,85 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+/**
+ * 管理者がアカウントを削除する API
+ * 管理者のみが呼び出せ、auth.admin.deleteUser でユーザーを削除する。
+ * auth.users 削除時に profiles 等は ON DELETE CASCADE で自動削除される。
+ */
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const { userId } = body;
+
+  if (!userId || typeof userId !== "string") {
+    return NextResponse.json(
+      { error: "ユーザーIDが必要です" },
+      { status: 400 }
+    );
+  }
+
+  // 自分自身は削除できない
+  if (userId === user.id) {
+    return NextResponse.json(
+      { error: "自分自身のアカウントは削除できません" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const admin = createAdminClient();
+
+    // 削除対象が管理者の場合、最後の管理者でないか確認
+    const { data: targetProfile } = await admin
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (targetProfile?.role === "admin") {
+      const { count } = await admin
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "admin");
+      if (count != null && count <= 1) {
+        return NextResponse.json(
+          { error: "最後の管理者アカウントは削除できません" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const { error } = await admin.auth.admin.deleteUser(userId);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Account deletion error:", err);
+    return NextResponse.json(
+      { error: "アカウント削除中にエラーが発生しました" },
+      { status: 500 }
+    );
+  }
+}
