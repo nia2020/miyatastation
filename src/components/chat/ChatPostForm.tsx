@@ -142,9 +142,13 @@ export function ChatPostForm({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-lg text-slate-500 dark:text-slate-400">
-                  ?
-                </span>
+                <Image
+                  src="/mascot.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-contain"
+                />
               )}
             </div>
             <div>

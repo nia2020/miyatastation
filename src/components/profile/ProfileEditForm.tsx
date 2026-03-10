@@ -160,7 +160,13 @@ export function ProfileEditForm({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-2xl text-slate-400">?</span>
+                  <Image
+                    src="/mascot.png"
+                    alt=""
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-contain"
+                  />
                 )}
               </div>
               <div className="flex flex-col gap-2">

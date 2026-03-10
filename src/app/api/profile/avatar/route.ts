@@ -17,13 +17,20 @@ export async function POST(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, created_at")
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin" && profile?.role !== "poster") {
+  const isAdminOrPoster = profile?.role === "admin" || profile?.role === "poster";
+  const joinedAt = profile?.created_at ? new Date(profile.created_at) : null;
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const isMember12MonthsOrMore =
+    joinedAt && joinedAt <= twelveMonthsAgo;
+
+  if (!isAdminOrPoster && !isMember12MonthsOrMore) {
     return NextResponse.json(
-      { error: "アイコン画像の設定は投稿者・管理者のみ可能です" },
+      { error: "アイコン画像の設定は入会から12ヶ月経過しているか、投稿者・管理者のみ可能です" },
       { status: 403 }
     );
   }
@@ -92,13 +99,20 @@ export async function DELETE() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, created_at")
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin" && profile?.role !== "poster") {
+  const isAdminOrPoster = profile?.role === "admin" || profile?.role === "poster";
+  const joinedAt = profile?.created_at ? new Date(profile.created_at) : null;
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const isMember12MonthsOrMore =
+    joinedAt && joinedAt <= twelveMonthsAgo;
+
+  if (!isAdminOrPoster && !isMember12MonthsOrMore) {
     return NextResponse.json(
-      { error: "アイコン画像の削除は投稿者・管理者のみ可能です" },
+      { error: "アイコン画像の削除は入会から12ヶ月経過しているか、投稿者・管理者のみ可能です" },
       { status: 403 }
     );
   }

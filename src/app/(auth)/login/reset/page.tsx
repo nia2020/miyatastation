@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function PasswordResetPage() {
@@ -35,6 +36,16 @@ export default function PasswordResetPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 text-center border border-slate-200 dark:border-slate-700">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/logo.png"
+                alt="Miyata Station"
+                width={200}
+                height={67}
+                className="h-16 w-auto"
+                priority
+              />
+            </div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">
               メールを送信しました
             </h1>
@@ -58,6 +69,16 @@ export default function PasswordResetPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/logo.png"
+              alt="Miyata Station"
+              width={200}
+              height={67}
+              className="h-16 w-auto"
+              priority
+            />
+          </div>
           <h1 className="text-2xl font-bold text-center mb-6 text-slate-800 dark:text-slate-200">
             パスワードリセット
           </h1>

@@ -222,12 +222,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // handle_new_user トリガーで profiles が作成されるため、会員番号・入会年月を更新
+    // handle_new_user トリガーで profiles が作成されるため、会員番号・入会年月・初回パスワード変更を更新
     const profileUpdates: {
       member_number?: string;
       created_at?: string;
+      must_change_password?: boolean;
       updated_at: string;
-    } = { updated_at: new Date().toISOString() };
+    } = { updated_at: new Date().toISOString(), must_change_password: true };
     if (memberNumber) profileUpdates.member_number = memberNumber;
     if (createdAt) profileUpdates.created_at = createdAt;
 

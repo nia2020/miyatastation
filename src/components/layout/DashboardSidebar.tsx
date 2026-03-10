@@ -8,6 +8,7 @@ import {
   CreditCard,
   UserCircle,
   Video,
+  FileText,
 } from "lucide-react";
 import { useNewFlags } from "@/contexts/NewFlagsContext";
 
@@ -37,10 +38,11 @@ const PAGES = [
   { id: "profile", label: "プロフィール編集", href: "/profile", icon: UserCircle },
   { id: "mk-room", label: "MK ROOM", href: "/dashboard/mk-room", icon: MiyataLogoIcon },
   { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
+  { id: "usage-guide", label: "ご利用案内", href: "/dashboard/usage-guide", icon: FileText },
 ] as const;
 
 interface DashboardSidebarProps {
-  currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos" | "mk-room";
+  currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos" | "mk-room" | "usage-guide";
   currentSection?: string;
   /** @deprecated useNewFlags から取得するため未使用。後方互換のため残す */
   newFlags?: { events?: boolean; forms?: boolean; chat?: boolean };

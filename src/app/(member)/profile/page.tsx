@@ -12,13 +12,19 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("nickname, birthday, birthday_wish_name, avatar_url, role")
+    .select("nickname, birthday, birthday_wish_name, avatar_url, role, created_at")
     .eq("id", user.id)
     .single();
 
   if (!profile) redirect("/dashboard");
 
-  const canSetAvatar = profile.role === "admin" || profile.role === "poster";
+  const isAdminOrPoster = profile.role === "admin" || profile.role === "poster";
+  const joinedAt = profile.created_at ? new Date(profile.created_at) : null;
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const isMember12MonthsOrMore =
+    joinedAt && joinedAt <= twelveMonthsAgo;
+  const canSetAvatar = isAdminOrPoster || !!isMember12MonthsOrMore;
 
   return (
     <div className="space-y-6">

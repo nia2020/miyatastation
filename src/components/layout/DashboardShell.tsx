@@ -36,7 +36,9 @@ export function DashboardShell({ children, newFlags }: DashboardShellProps) {
           ? "archive-videos"
           : pathname === "/dashboard/mk-room"
             ? "mk-room"
-            : "dashboard";
+            : pathname === "/dashboard/usage-guide"
+              ? "usage-guide"
+              : "dashboard";
 
   return (
     <>

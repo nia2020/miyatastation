@@ -424,9 +424,13 @@ export function ChatPost({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-lg text-slate-500 dark:text-slate-400">
-                      ?
-                    </span>
+                    <Image
+                      src="/mascot.png"
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-contain"
+                    />
                   )}
                 </div>
                 <div>
@@ -536,9 +540,13 @@ export function ChatPost({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      ?
-                    </span>
+                    <Image
+                      src="/mascot.png"
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-contain"
+                    />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

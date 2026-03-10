@@ -39,6 +39,12 @@ export function UsersAdmin() {
     email: string;
     newPassword: string;
   } | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResults, setImportResults] = useState<{
+    results: { email: string; success: boolean; error?: string }[];
+    summary: { success: number; failed: number; total: number };
+  } | null>(null);
 
   const fetchUsers = async () => {
     setListError(null);
@@ -164,6 +170,72 @@ export function UsersAdmin() {
     }
   };
 
+  const parseCsv = (text: string): { email: string; password: string; full_name?: string; member_number?: string; created_at?: string }[] => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length < 2) return [];
+    const header = lines[0].split(/[,\t]/).map((h) => h.trim().replace(/^"|"$/g, ""));
+    const rows: { email: string; password: string; full_name?: string; member_number?: string; created_at?: string }[] = [];
+    const colMap: Record<string, number> = {};
+    ["メールアドレス", "email", "パスワード", "password", "お名前", "full_name", "会員番号", "member_number", "入会年月", "created_at"].forEach((name) => {
+      const idx = header.findIndex((h) => h.toLowerCase() === name.toLowerCase() || h === name);
+      if (idx >= 0) colMap[name] = idx;
+    });
+    const emailCol = colMap["メールアドレス"] ?? colMap["email"] ?? 0;
+    const passwordCol = colMap["パスワード"] ?? colMap["password"] ?? 1;
+    const fullNameCol = colMap["お名前"] ?? colMap["full_name"];
+    const memberNumberCol = colMap["会員番号"] ?? colMap["member_number"];
+    const createdAtCol = colMap["入会年月"] ?? colMap["created_at"];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cells = lines[i].split(/[,\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
+      const email = cells[emailCol]?.trim() ?? "";
+      const password = cells[passwordCol]?.trim() ?? "";
+      if (!email && !password) continue;
+      rows.push({
+        email,
+        password,
+        full_name: fullNameCol != null && cells[fullNameCol] ? cells[fullNameCol].trim() : undefined,
+        member_number: memberNumberCol != null && cells[memberNumberCol] ? cells[memberNumberCol].trim() : undefined,
+        created_at: createdAtCol != null && cells[createdAtCol] ? cells[createdAtCol].trim() : undefined,
+      });
+    }
+    return rows;
+  };
+
+  const handleImport = async () => {
+    if (!importFile) return;
+    setImportLoading(true);
+    setImportResults(null);
+    setError(null);
+    setSuccess(null);
+    try {
+      const text = await importFile.text();
+      const rows = parseCsv(text);
+      if (rows.length === 0) {
+        setError("CSVファイルに有効なデータがありません。1行目はヘッダー、2行目以降にデータを入力してください。");
+        setImportLoading(false);
+        return;
+      }
+      const res = await fetch("/api/admin/users/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? "インポートに失敗しました");
+      }
+      setImportResults(data);
+      setImportFile(null);
+      setSuccess(`インポート完了: 成功 ${data.summary.success}件、失敗 ${data.summary.failed}件`);
+      fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "インポートに失敗しました");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* アカウント発行 */}
@@ -281,6 +353,70 @@ export function UsersAdmin() {
             {loading ? "発行中..." : "アカウントを発行"}
           </button>
         </form>
+      </div>
+
+      {/* 一斉インポート */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 p-6">
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+          一斉インポート
+        </h2>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          CSVファイルからアカウントを一括登録できます。1行目はヘッダー（メールアドレス,パスワード,お名前,会員番号,入会年月）、2行目以降にデータを入力してください。最大100件まで。
+        </p>
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="cursor-pointer">
+            <span className="inline-block px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+              ファイルを選択
+            </span>
+            <input
+              type="file"
+              accept=".csv,.txt"
+              className="hidden"
+              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+          {importFile && (
+            <>
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                {importFile.name}
+              </span>
+              <button
+                type="button"
+                onClick={handleImport}
+                disabled={importLoading}
+                className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {importLoading ? "インポート中..." : "インポート実行"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setImportFile(null)}
+                disabled={importLoading}
+                className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              >
+                キャンセル
+              </button>
+            </>
+          )}
+        </div>
+        {importResults && (
+          <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">
+              結果: 成功 {importResults.summary.success}件 / 失敗 {importResults.summary.failed}件 / 合計 {importResults.summary.total}件
+            </p>
+            {importResults.results.some((r) => !r.success) && (
+              <ul className="text-sm text-red-600 dark:text-red-400 space-y-1 max-h-40 overflow-y-auto">
+                {importResults.results
+                  .filter((r) => !r.success)
+                  .map((r, i) => (
+                    <li key={i}>
+                      {r.email}: {r.error}
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       {/* アカウント一覧 */}

@@ -79,6 +79,12 @@ export function AdminLayoutClient({ role, children }: AdminLayoutClientProps) {
               >
                 アーカイブ動画
               </Link>
+              <Link
+                href="/admin/usage-guide"
+                className="whitespace-nowrap px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium"
+              >
+                ご利用案内
+              </Link>
             </>
           )}
         </div>

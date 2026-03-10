@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Hash,
   Video,
+  FileText,
+  ChevronRight,
 } from "lucide-react";
 import { useNewFlags } from "@/contexts/NewFlagsContext";
 
@@ -75,7 +77,7 @@ export function DashboardHomeContent({
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {HUB_LINKS.map((link) => {
+        {HUB_LINKS.slice(0, 4).map((link) => {
           const { href, title, description, icon: Icon } = link;
           const useLogoIcon = href === "/dashboard/mk-room";
           const isNew =
@@ -118,6 +120,41 @@ export function DashboardHomeContent({
             </Link>
           );
         })}
+        <div className="sm:col-span-2 lg:col-span-2 flex flex-col sm:flex-row gap-4">
+          <Link
+            href="/dashboard/archive-videos"
+            className="relative flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md min-w-0 flex-1"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+              <Video className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-200">
+                アーカイブ動画
+              </h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                期間限定で公開中の動画を視聴
+              </p>
+            </div>
+          </Link>
+          <Link
+            href="/dashboard/usage-guide"
+            className="flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-5 min-w-0 flex-1 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md group"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+              <FileText className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+                ご利用案内
+                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                会員サイトのご利用に関する案内を確認
+              </p>
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );

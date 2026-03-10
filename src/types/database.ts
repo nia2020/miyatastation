@@ -20,6 +20,7 @@ export interface Database {
           birthday: string | null;
           birthday_wish_name: string | null;
           avatar_url: string | null;
+          must_change_password: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -33,6 +34,7 @@ export interface Database {
           birthday?: string | null;
           birthday_wish_name?: string | null;
           avatar_url?: string | null;
+          must_change_password?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -46,6 +48,7 @@ export interface Database {
           birthday?: string | null;
           birthday_wish_name?: string | null;
           avatar_url?: string | null;
+          must_change_password?: boolean;
           created_at?: string;
           updated_at?: string;
         };

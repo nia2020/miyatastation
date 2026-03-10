@@ -9,6 +9,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isChangePasswordPage = pathname === "/change-password";
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -72,6 +73,17 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    const redirect = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) =>
+      redirect.cookies.set(cookie.name, cookie.value)
+    );
+    return redirect;
+  }
+
+  if (isChangePasswordPage && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("redirect", "/change-password");
     const redirect = NextResponse.redirect(redirectUrl);
     supabaseResponse.cookies.getAll().forEach((cookie) =>
       redirect.cookies.set(cookie.name, cookie.value)

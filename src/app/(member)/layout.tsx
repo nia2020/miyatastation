@@ -28,7 +28,7 @@ export default async function MemberLayout({
 
   try {
     const [profileResult, contentUpdates, userViews] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+      supabase.from("profiles").select("*, must_change_password").eq("id", user!.id).maybeSingle(),
       Promise.all([
         supabase.from("events").select("updated_at").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
         supabase
@@ -86,6 +86,10 @@ export default async function MemberLayout({
     };
   } catch (e) {
     console.error("Member layout content fetch error:", e);
+  }
+
+  if (profile?.must_change_password) {
+    redirect("/change-password");
   }
 
   const needsOnboarding = profile && !profile.nickname?.trim();
