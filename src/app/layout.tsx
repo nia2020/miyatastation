@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   title: "Miyata Station | 会員専用サイト",
   description: "Kazuya Miyata Online Community - 会員専用サイト",
   openGraph: {
+    url: "https://miyata-station.com",
+    type: "website",
     title: "Miyata Station | 会員専用サイト",
     description: "Kazuya Miyata Online Community - 会員専用サイト",
     images: [ogImageUrl],
