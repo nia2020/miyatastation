@@ -17,12 +17,9 @@ const baseUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-// OGP画像は絶対URLで指定（Facebook等が正しいドメインで取得できるように）
-// Route Handler /og-image で Content-Type: image/png を明示して配信
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_ENV === "production" ? "https://miyata-station.com" : baseUrl);
-const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/og-image`;
+// OGP画像: Route Handler /og-image で Content-Type: image/png を明示して配信
+// 本番は必ず miyata-station.com の絶対URLを使用（キャッシュ・リダイレクト対策）
+const ogImageUrl = "https://miyata-station.com/og-image";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
