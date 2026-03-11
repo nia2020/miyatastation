@@ -21,6 +21,8 @@ const baseUrl =
 // 本番は必ず miyata-station.com の絶対URLを使用（キャッシュ・リダイレクト対策）
 const ogImageUrl = "https://miyata-station.com/og-image";
 
+const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID;
+
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: "Miyata Station | 会員専用サイト",
@@ -31,6 +33,7 @@ export const metadata: Metadata = {
     title: "Miyata Station | 会員専用サイト",
     description: "Kazuya Miyata Online Community - 会員専用サイト",
     images: [ogImageUrl],
+    siteName: "Miyata Station",
   },
   twitter: {
     card: "summary_large_image",
@@ -38,6 +41,9 @@ export const metadata: Metadata = {
     description: "Kazuya Miyata Online Community - 会員専用サイト",
     images: [ogImageUrl],
   },
+  ...(fbAppId && {
+    facebook: { appId: fbAppId },
+  }),
 };
 
 export default function RootLayout({
