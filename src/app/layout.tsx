@@ -17,6 +17,13 @@ const baseUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
+// OGP画像は絶対URLで指定（Facebook等が正しいドメインで取得できるように）
+// Route Handler /og-image で Content-Type: image/png を明示して配信
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_ENV === "production" ? "https://miyata-station.com" : baseUrl);
+const ogImageUrl = `${siteUrl.replace(/\/$/, "")}/og-image`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: "Miyata Station | 会員専用サイト",
@@ -24,13 +31,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Miyata Station | 会員専用サイト",
     description: "Kazuya Miyata Online Community - 会員専用サイト",
-    images: ["/og-image.png"],
+    images: [ogImageUrl],
   },
   twitter: {
     card: "summary_large_image",
     title: "Miyata Station | 会員専用サイト",
     description: "Kazuya Miyata Online Community - 会員専用サイト",
-    images: ["/og-image.png"],
+    images: [ogImageUrl],
   },
 };
 
