@@ -33,7 +33,7 @@ export function ConfigFormAdmin() {
     e.preventDefault();
     const valid = forms.filter((f) => f.url.trim());
     if (valid.length === 0 && !announcement.trim()) {
-      alert("お知らせまたはメッセージ募集のURLを少なくとも1つ入力してください");
+      alert("お知らせまたは各種フォームのURLを少なくとも1つ入力してください");
       return;
     }
     setSaving(true);
@@ -103,9 +103,9 @@ export function ConfigFormAdmin() {
 
       <div className="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 space-y-6">
       <div>
-        <h3 className="font-semibold text-slate-800 dark:text-slate-200">メッセージ募集の設定</h3>
+        <h3 className="font-semibold text-slate-800 dark:text-slate-200">各種フォームの設定</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-          メンバー向けの「メッセージ募集」に表示するフォームを追加できます。
+          メンバー向けの「各種フォーム」に表示するフォームを追加できます。
         </p>
       </div>
 
@@ -138,7 +138,7 @@ export function ConfigFormAdmin() {
                 value={form.title}
                 onChange={(e) => updateForm(i, "title", e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
-                placeholder="メッセージ募集"
+                placeholder="各種フォーム"
               />
             </div>
             <div>

@@ -19,9 +19,9 @@ export function GoogleFormLink({ forms, url, title }: GoogleFormLinkProps) {
     forms && forms.length > 0
       ? forms.filter((f) => f.url?.trim())
       : url?.trim()
-        ? [{ title: title?.trim() || "メッセージ募集", url: url, description: "" }]
+        ? [{ title: title?.trim() || "各種フォーム", url: url, description: "" }]
         : process.env.NEXT_PUBLIC_GOOGLE_FORM_URL?.trim()
-          ? [{ title: "メッセージ募集", url: process.env.NEXT_PUBLIC_GOOGLE_FORM_URL, description: "" }]
+          ? [{ title: "各種フォーム", url: process.env.NEXT_PUBLIC_GOOGLE_FORM_URL, description: "" }]
           : [];
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -46,7 +46,7 @@ export function GoogleFormLink({ forms, url, title }: GoogleFormLinkProps) {
           className="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm"
         >
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            {form.title?.trim() || "メッセージ募集"}
+            {form.title?.trim() || "各種フォーム"}
           </h2>
           {form.description?.trim() && (
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 whitespace-pre-wrap">

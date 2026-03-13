@@ -71,7 +71,7 @@ export async function GET() {
     const legacyUrl = config?.google_form_url?.trim();
     const legacyTitle = config?.message_collection_title?.trim();
     if (legacyUrl) {
-      forms = [{ title: legacyTitle || "メッセージ募集", url: legacyUrl, description: "" }];
+      forms = [{ title: legacyTitle || "各種フォーム", url: legacyUrl, description: "" }];
     }
   }
 

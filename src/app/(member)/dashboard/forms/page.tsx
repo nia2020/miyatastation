@@ -32,7 +32,7 @@ export default async function DashboardFormsPage() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-        メッセージ募集
+        各種フォーム
       </h2>
       <GoogleFormLink forms={messageForms} />
     </div>

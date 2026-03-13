@@ -23,7 +23,7 @@ export function parseMessageForms(configMap: Record<string, string | null> | nul
   } catch {}
   if (forms.length === 0 && configMap?.google_form_url?.trim()) {
     forms = [{
-      title: configMap?.message_collection_title?.trim() || "メッセージ募集",
+      title: configMap?.message_collection_title?.trim() || "各種フォーム",
       url: configMap.google_form_url,
       description: "",
     }];

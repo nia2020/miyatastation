@@ -14,7 +14,7 @@ import { useNewFlags } from "@/contexts/NewFlagsContext";
 
 const HUB_LINKS = [
   { href: "/dashboard/events", title: "イベント情報", description: "Zoomイベントのスケジュールと入室情報", icon: Calendar },
-  { href: "/dashboard/forms", title: "メッセージ募集", description: "Googleフォームでメッセージを送信", icon: MessageSquare },
+  { href: "/dashboard/forms", title: "各種フォーム", description: "Googleフォームなどのリンクを確認", icon: MessageSquare },
   { href: "/dashboard/chat", title: "フィード", description: "コミュニティの投稿を確認", icon: Hash },
   { href: "/dashboard/mk-room", title: "MK ROOM", description: "宮田 和弥 秘密の部屋", icon: null },
   { href: "/dashboard/archive-videos", title: "アーカイブ動画", description: "期間限定で公開中の動画を視聴", icon: Video },

@@ -29,7 +29,7 @@ function MiyataLogoIcon({ className }: { className?: string }) {
 const SECTIONS = [
   { id: "home", label: "会員TOP", href: "/dashboard", icon: Home },
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
-  { id: "forms", label: "メッセージ募集", href: "/dashboard/forms", icon: MessageSquare },
+  { id: "forms", label: "各種フォーム", href: "/dashboard/forms", icon: MessageSquare },
   { id: "chat", label: "フィード", href: "/dashboard/chat", icon: Hash },
 ] as const;
 
