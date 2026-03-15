@@ -8,7 +8,7 @@ export default function AdminUsageGuidePage() {
           ご利用案内管理
         </h2>
         <p className="mt-1 text-slate-600 dark:text-slate-400">
-          会員向けご利用案内ページの内容を編集・追加できます。
+          メンバー向けご利用案内ページの内容を編集・追加できます。
         </p>
       </div>
 

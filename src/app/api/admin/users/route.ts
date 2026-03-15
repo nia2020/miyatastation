@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
       password,
       email_confirm: true,
       user_metadata: {
-        full_name: full_name || "会員",
+        full_name: full_name || "メンバー",
       },
     });
 
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: data.user.id,
         email: data.user.email,
-        full_name: full_name || "会員",
+        full_name: full_name || "メンバー",
       },
     });
   } catch (err) {

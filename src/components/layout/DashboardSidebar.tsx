@@ -27,18 +27,18 @@ function MiyataLogoIcon({ className }: { className?: string }) {
 }
 
 const SECTIONS = [
-  { id: "home", label: "会員TOP", href: "/dashboard", icon: Home },
+  { id: "home", label: "TOP", href: "/dashboard", icon: Home },
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
   { id: "forms", label: "各種フォーム", href: "/dashboard/forms", icon: MessageSquare },
   { id: "chat", label: "フィード", href: "/dashboard/chat", icon: Hash },
+  { id: "mk-room", label: "MK ROOM", href: "/dashboard/mk-room", icon: MiyataLogoIcon },
+  { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
+  { id: "usage-guide", label: "ご利用案内", href: "/dashboard/usage-guide", icon: FileText },
 ] as const;
 
 const PAGES = [
   { id: "member-card", label: "デジタル会員証", href: "/member-card", icon: CreditCard },
   { id: "profile", label: "プロフィール編集", href: "/profile", icon: UserCircle },
-  { id: "mk-room", label: "MK ROOM", href: "/dashboard/mk-room", icon: MiyataLogoIcon },
-  { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
-  { id: "usage-guide", label: "ご利用案内", href: "/dashboard/usage-guide", icon: FileText },
 ] as const;
 
 interface DashboardSidebarProps {
@@ -72,7 +72,7 @@ export function DashboardSidebar({
               href={href}
               onClick={onLinkClick}
               className={`flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-left font-medium transition-colors ${
-                currentPage === "dashboard" && (currentSection || "home") === id
+                (currentPage === "dashboard" && (currentSection || "home") === id) || currentPage === id
                   ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
                   : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}

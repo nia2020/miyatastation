@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 /**
  * お誕生日一覧を取得（管理者・投稿者のみ）
- * 誕生日が登録されている会員のみ返す
+ * 誕生日が登録されているメンバーのみ返す
  */
 export async function GET() {
   const supabase = await createClient();

@@ -39,7 +39,7 @@ export function LoginForm({ redirectTo = "/dashboard" }: LoginFormProps) {
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
           <h1 className="text-2xl font-bold text-center mb-6 text-slate-800 dark:text-slate-200">
-            会員ログイン
+            メンバーログイン
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">

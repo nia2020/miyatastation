@@ -62,3 +62,13 @@ textarea::placeholder {
     text-wrap: balance;
   }
 }
+
+/* 会員証のキラキラシマーエフェクト */
+@keyframes member-card-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}

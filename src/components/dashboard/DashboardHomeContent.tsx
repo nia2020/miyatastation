@@ -12,12 +12,75 @@ import {
 } from "lucide-react";
 import { useNewFlags } from "@/contexts/NewFlagsContext";
 
+type CardTheme = "amber" | "emerald" | "violet" | "gold" | "rose" | "sky";
+
+const THEME_CLASSES: Record<
+  CardTheme,
+  {
+    cardBg: string;
+    iconBg: string;
+    iconText: string;
+    hoverBorder: string;
+    hoverShadow: string;
+    iconHover: string;
+  }
+> = {
+  amber: {
+    cardBg: "bg-gradient-to-br from-amber-50/80 to-orange-50/60 dark:from-amber-950/30 dark:to-orange-950/20",
+    iconBg: "bg-gradient-to-br from-amber-400 to-orange-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-amber-400/60 dark:hover:border-amber-500/50",
+    hoverShadow: "hover:shadow-lg hover:shadow-amber-500/15 dark:hover:shadow-amber-500/10",
+    iconHover: "group-hover:scale-110",
+  },
+  emerald: {
+    cardBg: "bg-gradient-to-br from-emerald-50/80 to-teal-50/60 dark:from-emerald-950/30 dark:to-teal-950/20",
+    iconBg: "bg-gradient-to-br from-emerald-400 to-teal-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-emerald-400/60 dark:hover:border-emerald-500/50",
+    hoverShadow: "hover:shadow-lg hover:shadow-emerald-500/15 dark:hover:shadow-emerald-500/10",
+    iconHover: "group-hover:scale-110",
+  },
+  violet: {
+    cardBg: "bg-gradient-to-br from-violet-50/80 to-purple-50/60 dark:from-violet-950/30 dark:to-purple-950/20",
+    iconBg: "bg-gradient-to-br from-violet-400 to-purple-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-violet-400/60 dark:hover:border-violet-500/50",
+    hoverShadow: "hover:shadow-lg hover:shadow-violet-500/15 dark:hover:shadow-violet-500/10",
+    iconHover: "group-hover:scale-110",
+  },
+  gold: {
+    cardBg: "bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-amber-100/80 dark:from-amber-950/40 dark:via-yellow-950/20 dark:to-amber-900/30",
+    iconBg: "bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-amber-400/70 dark:hover:border-amber-400/60",
+    hoverShadow: "hover:shadow-lg hover:shadow-amber-400/20 dark:hover:shadow-amber-500/15",
+    iconHover: "group-hover:scale-110",
+  },
+  rose: {
+    cardBg: "bg-gradient-to-br from-rose-50/80 to-pink-50/60 dark:from-rose-950/30 dark:to-pink-950/20",
+    iconBg: "bg-gradient-to-br from-rose-400 to-pink-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-rose-400/60 dark:hover:border-rose-500/50",
+    hoverShadow: "hover:shadow-lg hover:shadow-rose-500/15 dark:hover:shadow-rose-500/10",
+    iconHover: "group-hover:scale-110",
+  },
+  sky: {
+    cardBg: "bg-gradient-to-br from-sky-50/80 to-blue-50/60 dark:from-sky-950/30 dark:to-blue-950/20",
+    iconBg: "bg-gradient-to-br from-sky-400 to-blue-500",
+    iconText: "text-white",
+    hoverBorder: "hover:border-sky-400/60 dark:hover:border-sky-500/50",
+    hoverShadow: "hover:shadow-lg hover:shadow-sky-500/15 dark:hover:shadow-sky-500/10",
+    iconHover: "group-hover:scale-110",
+  },
+};
+
 const HUB_LINKS = [
-  { href: "/dashboard/events", title: "イベント情報", description: "Zoomイベントのスケジュールと入室情報", icon: Calendar },
-  { href: "/dashboard/forms", title: "各種フォーム", description: "Googleフォームなどのリンクを確認", icon: MessageSquare },
-  { href: "/dashboard/chat", title: "フィード", description: "コミュニティの投稿を確認", icon: Hash },
-  { href: "/dashboard/mk-room", title: "MK ROOM", description: "宮田 和弥 秘密の部屋", icon: null },
-  { href: "/dashboard/archive-videos", title: "アーカイブ動画", description: "期間限定で公開中の動画を視聴", icon: Video },
+  { href: "/dashboard/events", title: "イベント情報", description: "Zoomイベントのスケジュールと入室情報", icon: Calendar, theme: "amber" as CardTheme },
+  { href: "/dashboard/forms", title: "各種フォーム", description: "現在募集中のテーマ・メッセージ", icon: MessageSquare, theme: "emerald" as CardTheme },
+  { href: "/dashboard/chat", title: "フィード", description: "コミュニティの投稿を確認", icon: Hash, theme: "violet" as CardTheme },
+  { href: "/dashboard/mk-room", title: "MK ROOM", description: "宮田 和弥 秘密の部屋", icon: null, theme: "gold" as CardTheme },
+  { href: "/dashboard/archive-videos", title: "アーカイブ動画", description: "期間限定で公開中の動画を視聴", icon: Video, theme: "rose" as CardTheme },
 ] as const;
 
 interface DashboardHomeContentProps {
@@ -34,7 +97,7 @@ export function DashboardHomeContent({
   const newFlags = useNewFlags();
 
   return (
-    <div className="space-y-8 min-w-0 overflow-hidden">
+    <div className="space-y-8 min-w-0 overflow-visible">
       {announcement && (
         <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
@@ -69,16 +132,17 @@ export function DashboardHomeContent({
         </div>
         <div>
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-            会員TOP
+            TOP
           </h2>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
             ようこそ、{displayName}さん
           </p>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 overflow-visible">
         {HUB_LINKS.slice(0, 4).map((link) => {
-          const { href, title, description, icon: Icon } = link;
+          const { href, title, description, icon: Icon, theme } = link;
+          const t = THEME_CLASSES[theme];
           const useLogoIcon = href === "/dashboard/mk-room";
           const isNew =
             (href.includes("/events") && newFlags.events) ||
@@ -88,14 +152,14 @@ export function DashboardHomeContent({
             <Link
               key={href}
               href={href}
-              className="relative flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md"
+              className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-6 transition-all duration-300 hover:scale-[1.02] hover:z-10 ${t.cardBg} ${t.hoverBorder} ${t.hoverShadow}`}
             >
               {isNew && (
                 <span className="absolute top-3 right-3 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded">
                   NEW
                 </span>
               )}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg overflow-hidden transition-transform duration-300 ${t.iconBg} ${t.iconText} ${t.iconHover}`}>
                 {useLogoIcon ? (
                   <Image
                     src="/logo.png"
@@ -123,9 +187,9 @@ export function DashboardHomeContent({
         <div className="sm:col-span-2 lg:col-span-2 flex flex-col sm:flex-row gap-4">
           <Link
             href="/dashboard/archive-videos"
-            className="relative flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md min-w-0 flex-1"
+            className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-6 transition-all duration-300 hover:scale-[1.02] hover:z-10 min-w-0 flex-1 ${THEME_CLASSES.rose.cardBg} ${THEME_CLASSES.rose.hoverBorder} ${THEME_CLASSES.rose.hoverShadow}`}
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg overflow-hidden transition-transform duration-300 ${THEME_CLASSES.rose.iconBg} ${THEME_CLASSES.rose.iconText} ${THEME_CLASSES.rose.iconHover}`}>
               <Video className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
@@ -139,18 +203,18 @@ export function DashboardHomeContent({
           </Link>
           <Link
             href="/dashboard/usage-guide"
-            className="flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-5 min-w-0 flex-1 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md group"
+            className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-5 min-w-0 flex-1 transition-all duration-300 hover:scale-[1.02] hover:z-10 ${THEME_CLASSES.sky.cardBg} ${THEME_CLASSES.sky.hoverBorder} ${THEME_CLASSES.sky.hoverShadow}`}
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg overflow-hidden transition-transform duration-300 ${THEME_CLASSES.sky.iconBg} ${THEME_CLASSES.sky.iconText} ${THEME_CLASSES.sky.iconHover}`}>
               <FileText className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
                 ご利用案内
-                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-sky-500 transition-colors" />
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                会員サイトのご利用に関する案内を確認
+                メンバーサイトのご利用に関する案内を確認
               </p>
             </div>
           </Link>

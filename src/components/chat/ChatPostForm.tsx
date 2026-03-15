@@ -180,7 +180,7 @@ export function ChatPostForm({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
-              placeholder="会員へのお知らせ内容"
+              placeholder="メンバーへのお知らせ内容"
               className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
             />
           </div>

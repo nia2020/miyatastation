@@ -122,7 +122,7 @@ export function BirthdayList() {
   if (birthdays.length === 0) {
     return (
       <p className="text-slate-500 dark:text-slate-400">
-        誕生日が登録されている会員はいません
+        誕生日が登録されているメンバーはいません
       </p>
     );
   }
@@ -225,7 +225,7 @@ export function BirthdayList() {
       <div className="overflow-x-auto">
         {currentMonthBirthdays.length === 0 ? (
           <p className="text-slate-500 dark:text-slate-400 py-8 text-center">
-            {selectedMonth}月の誕生日の会員はいません
+            {selectedMonth}月の誕生日のメンバーはいません
           </p>
         ) : (
           <table className="w-full text-sm">

@@ -89,7 +89,7 @@ export function ConfigFormAdmin() {
         <div>
           <h3 className="font-semibold text-slate-800 dark:text-slate-200">運営からのお知らせ</h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            会員TOPの目立つ位置に表示されます。空欄の場合は非表示です。
+            TOPの目立つ位置に表示されます。空欄の場合は非表示です。
           </p>
         </div>
         <textarea

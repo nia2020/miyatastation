@@ -271,7 +271,7 @@ export function UsersAdmin() {
           アカウント発行
         </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-          発行したメールアドレスとパスワードを会員に伝えてください。
+          発行したメールアドレスとパスワードをメンバーに伝えてください。
           会員番号・入会年月の入力は任意です（未入力時は自動採番・本日登録）。発行されたアカウントでのみログインできます。
         </p>
 
@@ -548,7 +548,7 @@ export function UsersAdmin() {
                           }
                           className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
                         >
-                          <option value="member">会員</option>
+                          <option value="member">メンバー</option>
                           <option value="admin">管理者</option>
                           <option value="poster">投稿者</option>
                         </select>
@@ -566,7 +566,7 @@ export function UsersAdmin() {
                             ? "管理者"
                             : u.role === "poster"
                               ? "投稿者"
-                              : "会員"}
+                              : "メンバー"}
                         </span>
                       )}
                     </td>

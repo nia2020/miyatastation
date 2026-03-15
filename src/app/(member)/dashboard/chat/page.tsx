@@ -151,7 +151,7 @@ export default async function DashboardChatPage() {
                 authorName={authorMap[post.author_id]}
                 authorAvatarUrl={authorAvatarMap[post.author_id] ?? null}
                 currentUserNickname={
-                  profile?.nickname?.trim() || profile?.full_name || "会員"
+                  profile?.nickname?.trim() || profile?.full_name || "メンバー"
                 }
                 currentUserAvatarUrl={profile?.avatar_url ?? null}
                 currentUserId={user.id}
@@ -177,7 +177,7 @@ export default async function DashboardChatPage() {
               authorName={authorMap[post.author_id]}
               authorAvatarUrl={authorAvatarMap[post.author_id] ?? null}
               currentUserNickname={
-                profile?.nickname?.trim() || profile?.full_name || "会員"
+                profile?.nickname?.trim() || profile?.full_name || "メンバー"
               }
               currentUserAvatarUrl={profile?.avatar_url ?? null}
               currentUserId={user.id}

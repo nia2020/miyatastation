@@ -32,7 +32,7 @@ export default async function UsageGuidePage() {
         ご利用案内
       </h2>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        会員サイトのご利用に関する案内です。
+        メンバーサイトのご利用に関する案内です。
       </p>
       <div className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-6">
         {items.length > 0 ? (
@@ -42,7 +42,7 @@ export default async function UsageGuidePage() {
                 <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-sm font-medium text-indigo-600 dark:text-indigo-400">
                   {i + 1}
                 </span>
-                <span className="text-slate-700 dark:text-slate-300 pt-0.5">
+                <span className="text-slate-700 dark:text-slate-300 pt-0.5 whitespace-pre-line">
                   {item}
                 </span>
               </li>

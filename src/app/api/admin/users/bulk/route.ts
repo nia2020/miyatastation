@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
         : null;
     const fullName =
       row.full_name && typeof row.full_name === "string"
-        ? row.full_name.trim() || "会員"
-        : "会員";
+        ? row.full_name.trim() || "メンバー"
+        : "メンバー";
 
     let createdAt: string | null = null;
     if (row.created_at) {

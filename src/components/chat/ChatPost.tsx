@@ -524,7 +524,7 @@ export function ChatPost({
               isAdmin ||
               (currentUserId && comment.user_id === currentUserId);
             const commenterName =
-              comment.profiles?.nickname?.trim() || "会員";
+              comment.profiles?.nickname?.trim() || "メンバー";
             return (
               <div
                 key={comment.id}

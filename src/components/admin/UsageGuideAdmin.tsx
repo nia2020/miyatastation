@@ -72,7 +72,7 @@ export function UsageGuideAdmin() {
             ご利用案内の項目
           </h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            会員向けのご利用案内ページに表示されます。項目の追加・編集・削除ができます。
+            メンバー向けのご利用案内ページに表示されます。項目の追加・編集・削除ができます。
           </p>
         </div>
 

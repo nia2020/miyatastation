@@ -17,7 +17,7 @@ export default async function DashboardHomePage() {
   ]);
 
   const displayName =
-    profile?.nickname?.trim() || profile?.full_name || "会員";
+    profile?.nickname?.trim() || profile?.full_name || "メンバー";
   const announcement = announcementRow?.value?.trim() ?? "";
 
   return (

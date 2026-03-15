@@ -25,20 +25,20 @@ const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
-  title: "Miyata Station | 会員専用サイト",
-  description: "Kazuya Miyata Online Community - 会員専用サイト",
+  title: "Miyata Station | メンバー専用サイト",
+  description: "Kazuya Miyata Online Community - メンバー専用サイト",
   openGraph: {
     url: "https://miyata-station.com",
     type: "website",
-    title: "Miyata Station | 会員専用サイト",
-    description: "Kazuya Miyata Online Community - 会員専用サイト",
+    title: "Miyata Station | メンバー専用サイト",
+    description: "Kazuya Miyata Online Community - メンバー専用サイト",
     images: [ogImageUrl],
     siteName: "Miyata Station",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Miyata Station | 会員専用サイト",
-    description: "Kazuya Miyata Online Community - 会員専用サイト",
+    title: "Miyata Station | メンバー専用サイト",
+    description: "Kazuya Miyata Online Community - メンバー専用サイト",
     images: [ogImageUrl],
   },
   ...(fbAppId && {

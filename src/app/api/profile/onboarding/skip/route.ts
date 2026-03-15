@@ -17,7 +17,7 @@ export async function POST() {
   const { error } = await supabase
     .from("profiles")
     .update({
-      nickname: "会員",
+      nickname: "メンバー",
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);

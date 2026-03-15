@@ -7,7 +7,7 @@ export default function AdminBirthdaysPage() {
         お誕生日一覧
       </h2>
       <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-        誕生日が登録されている会員の一覧です。月日順に表示しています。
+        誕生日が登録されているメンバーの一覧です。月日順に表示しています。
       </p>
       <BirthdayList />
     </div>

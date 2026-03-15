@@ -9,7 +9,7 @@ export default function AdminPage() {
       >
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">アカウント発行</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          会員アカウントの新規発行（管理者のみ）
+          メンバーアカウントの新規発行（管理者のみ）
         </p>
       </Link>
 
@@ -39,7 +39,7 @@ export default function AdminPage() {
       >
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">お誕生日一覧</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          誕生日が登録されている会員の一覧
+          誕生日が登録されているメンバーの一覧
         </p>
       </Link>
 
@@ -59,7 +59,7 @@ export default function AdminPage() {
       >
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">ご利用案内</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          会員向けご利用案内の編集・追加
+          メンバー向けご利用案内の編集・追加
         </p>
       </Link>
     </div>

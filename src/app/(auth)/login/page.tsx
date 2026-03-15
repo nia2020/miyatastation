@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: Props) {
             />
           </div>
           <h1 className="text-2xl font-bold text-center mb-6 text-slate-800 dark:text-slate-200">
-            会員ログイン
+            メンバーログイン
           </h1>
 
           <form action="/api/auth/login" method="POST" className="space-y-4">

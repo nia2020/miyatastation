@@ -23,7 +23,7 @@ export default async function MemberCardPage() {
         デジタル会員証
       </h2>
       <MemberCardDisplay
-        memberName={profile.full_name}
+        memberName={profile.nickname?.trim() || profile.full_name || ""}
         memberNumber={profile.member_number}
         joinedAt={profile.created_at}
       />

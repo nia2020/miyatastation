@@ -198,7 +198,7 @@ export function ProfileEditForm({
               </div>
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              会員TOPの挨拶部分に表示されます
+              TOPの挨拶部分に表示されます
             </p>
           </div>
         )}
