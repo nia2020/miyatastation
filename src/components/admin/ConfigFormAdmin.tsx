@@ -1,8 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  MESSAGE_FORM_MAX_SECTIONS,
+  type MessageForm,
+  type MessageFormSection,
+} from "@/lib/forms";
 
-type FormItem = { title: string; url: string; description: string };
+type FormItem = MessageForm;
+
+const emptySection = (): MessageFormSection => ({ title: "", description: "" });
+
+const defaultForm = (): FormItem => ({
+  url: "",
+  sections: [emptySection()],
+});
+
+function normalizeFormFromApi(f: MessageForm): FormItem {
+  const sections = f.sections?.length
+    ? f.sections.slice(0, MESSAGE_FORM_MAX_SECTIONS).map((s) => ({
+        title: s.title ?? "",
+        description: s.description ?? "",
+      }))
+    : [emptySection()];
+  return { url: f.url ?? "", sections };
+}
 
 export function ConfigFormAdmin() {
   const [forms, setForms] = useState<FormItem[]>([]);
@@ -16,16 +38,12 @@ export function ConfigFormAdmin() {
       .then((data) => {
         setForms(
           Array.isArray(data.forms) && data.forms.length > 0
-            ? data.forms.map((f: FormItem) => ({
-                title: f.title ?? "",
-                url: f.url ?? "",
-                description: f.description ?? "",
-              }))
-            : [{ title: "", url: "", description: "" }]
+            ? data.forms.map((f: MessageForm) => normalizeFormFromApi(f))
+            : [defaultForm()]
         );
         setAnnouncement(typeof data.announcement === "string" ? data.announcement : "");
       })
-      .catch(() => setForms([{ title: "", url: "", description: "" }]))
+      .catch(() => setForms([defaultForm()]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,7 +65,7 @@ export function ConfigFormAdmin() {
         const data = await res.json();
         throw new Error(data.error ?? "保存に失敗しました");
       }
-      setForms(valid.length > 0 ? valid : [{ title: "", url: "", description: "" }]);
+      setForms(valid.length > 0 ? valid.map(normalizeFormFromApi) : [defaultForm()]);
       alert("保存しました");
     } catch (err) {
       alert(err instanceof Error ? err.message : "保存に失敗しました");
@@ -57,17 +75,55 @@ export function ConfigFormAdmin() {
   };
 
   const addForm = () => {
-    setForms((prev) => [...prev, { title: "", url: "", description: "" }]);
+    setForms((prev) => [...prev, defaultForm()]);
   };
 
   const removeForm = (i: number) => {
     setForms((prev) => prev.filter((_, idx) => idx !== i));
   };
 
-  const updateForm = (i: number, field: "title" | "url" | "description", value: string) => {
+  const updateFormUrl = (i: number, value: string) => {
     setForms((prev) => {
       const next = [...prev];
-      next[i] = { ...next[i], [field]: value };
+      next[i] = { ...next[i], url: value };
+      return next;
+    });
+  };
+
+  const updateSection = (
+    formIndex: number,
+    sectionIndex: number,
+    field: keyof MessageFormSection,
+    value: string
+  ) => {
+    setForms((prev) => {
+      const next = [...prev];
+      const sections = [...next[formIndex].sections];
+      sections[sectionIndex] = { ...sections[sectionIndex], [field]: value };
+      next[formIndex] = { ...next[formIndex], sections };
+      return next;
+    });
+  };
+
+  const addSection = (formIndex: number) => {
+    setForms((prev) => {
+      const next = [...prev];
+      const row = next[formIndex];
+      if (row.sections.length >= MESSAGE_FORM_MAX_SECTIONS) return prev;
+      next[formIndex] = { ...row, sections: [...row.sections, emptySection()] };
+      return next;
+    });
+  };
+
+  const removeSection = (formIndex: number, sectionIndex: number) => {
+    setForms((prev) => {
+      const next = [...prev];
+      const row = next[formIndex];
+      if (row.sections.length <= 1) return prev;
+      next[formIndex] = {
+        ...row,
+        sections: row.sections.filter((_, j) => j !== sectionIndex),
+      };
       return next;
     });
   };
@@ -105,7 +161,7 @@ export function ConfigFormAdmin() {
       <div>
         <h3 className="font-semibold text-slate-800 dark:text-slate-200">各種フォームの設定</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-          メンバー向けの「各種フォーム」に表示するフォームを追加できます。
+          メンバー向けの「各種フォーム」に表示するフォームを追加できます。1つのフォームごとにリンク（URL）は1つです。タイトルと詳細は最大3組まで登録できます。
         </p>
       </div>
 
@@ -129,30 +185,64 @@ export function ConfigFormAdmin() {
                 </button>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                タイトル
-              </label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => updateForm(i, "title", e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
-                placeholder="各種フォーム"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                詳細
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) => updateForm(i, "description", e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg min-h-[80px]"
-                placeholder="フォームの説明や補足を記載"
-                rows={3}
-              />
-            </div>
+
+            {form.sections.map((section, si) => (
+              <div
+                key={si}
+                className="space-y-3 p-3 rounded-lg border border-slate-200/80 dark:border-slate-600/80 bg-white/60 dark:bg-slate-800/40"
+              >
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    タイトル・詳細 {si + 1}
+                    {form.sections.length > 1 ? ` / ${form.sections.length}` : ""}
+                  </span>
+                  {form.sections.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSection(i, si)}
+                      className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 shrink-0"
+                    >
+                      この組を削除
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    タイトル
+                  </label>
+                  <input
+                    type="text"
+                    value={section.title}
+                    onChange={(e) => updateSection(i, si, "title", e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
+                    placeholder="各種フォーム"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    詳細
+                  </label>
+                  <textarea
+                    value={section.description}
+                    onChange={(e) => updateSection(i, si, "description", e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 min-h-[80px]"
+                    placeholder="フォームの説明や補足を記載"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            ))}
+
+            {form.sections.length < MESSAGE_FORM_MAX_SECTIONS && (
+              <button
+                type="button"
+                onClick={() => addSection(i)}
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+              >
+                + タイトル・詳細を追加（最大{MESSAGE_FORM_MAX_SECTIONS}組）
+              </button>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 URL
@@ -160,7 +250,7 @@ export function ConfigFormAdmin() {
               <input
                 type="url"
                 value={form.url}
-                onChange={(e) => updateForm(i, "url", e.target.value)}
+                onChange={(e) => updateFormUrl(i, e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
                 placeholder="https://forms.gle/xxxxx"
               />

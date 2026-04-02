@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { normalizeEventDateInputToIso } from "@/lib/event-datetime";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
   const eventData = {
     title,
     description: description || null,
-    event_date: new Date(event_date).toISOString(),
+    event_date: normalizeEventDateInputToIso(event_date),
     zoom_url,
     zoom_meeting_id: zoom_meeting_id || null,
     zoom_passcode: zoom_passcode || null,

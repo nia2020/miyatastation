@@ -19,6 +19,7 @@ export function EventCard({ event, isPast }: EventCardProps) {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
       dateStyle: "full",
       timeStyle: "short",
     });

@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import type { Event } from "@/types/database";
+import {
+  eventDateIsoToDatetimeLocalValue,
+  getDefaultEventDatetimeLocalJst,
+} from "@/lib/event-datetime";
 import { isEventDeletable } from "@/lib/events";
 
 interface EventsAdminProps {
@@ -14,22 +18,15 @@ export function EventsAdmin({ events }: EventsAdminProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const getDefaultEventDate = () => {
-    const d = new Date();
-    d.setHours(21, 0, 0, 0);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-
-  const defaultEvent = {
+  const createEmptyForm = () => ({
     title: "",
-    event_date: getDefaultEventDate(),
+    event_date: getDefaultEventDatetimeLocalJst(),
     zoom_url: "",
     zoom_meeting_id: "",
     zoom_passcode: "",
-  };
+  });
 
-  const [formData, setFormData] = useState(defaultEvent);
+  const [formData, setFormData] = useState(createEmptyForm);
 
   const handleSave = async () => {
     setLoading(true);
@@ -59,7 +56,7 @@ export function EventsAdmin({ events }: EventsAdminProps) {
       }
       setEditing(null);
       setIsCreating(false);
-      setFormData(defaultEvent);
+      setFormData(createEmptyForm());
     } catch (err) {
       alert(err instanceof Error ? err.message : "保存に失敗しました");
     } finally {
@@ -97,7 +94,7 @@ export function EventsAdmin({ events }: EventsAdminProps) {
     setIsCreating(false);
     setFormData({
       title: event.title,
-      event_date: event.event_date.slice(0, 16),
+      event_date: eventDateIsoToDatetimeLocalValue(event.event_date),
       zoom_url: event.zoom_url,
       zoom_meeting_id: event.zoom_meeting_id ?? "",
       zoom_passcode: event.zoom_passcode ?? "",
@@ -107,13 +104,13 @@ export function EventsAdmin({ events }: EventsAdminProps) {
   const startCreate = () => {
     setEditing(null);
     setIsCreating(true);
-    setFormData(defaultEvent);
+    setFormData(createEmptyForm());
   };
 
   const cancel = () => {
     setEditing(null);
     setIsCreating(false);
-    setFormData(defaultEvent);
+    setFormData(createEmptyForm());
   };
 
   return (
@@ -228,7 +225,11 @@ export function EventsAdmin({ events }: EventsAdminProps) {
             <div>
               <h3 className="font-medium text-slate-800 dark:text-slate-200">{event.title}</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                {new Date(event.event_date).toLocaleString("ja-JP")}
+                {new Date(event.event_date).toLocaleString("ja-JP", {
+                  timeZone: "Asia/Tokyo",
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
               </p>
             </div>
             <div className="flex gap-2">

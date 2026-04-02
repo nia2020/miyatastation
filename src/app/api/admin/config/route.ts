@@ -1,27 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { coerceMessageForm, parseMessageForms, type MessageForm } from "@/lib/forms";
 import { NextRequest, NextResponse } from "next/server";
 
-export type MessageForm = { title: string; url: string; description?: string };
-
-function parseForms(value: string | null): MessageForm[] {
-  if (!value?.trim()) return [];
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (f): f is MessageForm =>
-          f && typeof f === "object" && typeof (f as MessageForm).title === "string" && typeof (f as MessageForm).url === "string"
-      )
-      .map((f) => ({
-        title: (f as MessageForm).title,
-        url: (f as MessageForm).url,
-        description: typeof (f as MessageForm).description === "string" ? (f as MessageForm).description : "",
-      }));
-  } catch {
-    return [];
-  }
-}
+export type { MessageForm };
 
 export async function GET() {
   const supabase = await createClient();
@@ -65,15 +46,7 @@ export async function GET() {
     {} as Record<string, string | null>
   );
 
-  let forms = parseForms(config?.message_collection_forms ?? null);
-
-  if (forms.length === 0) {
-    const legacyUrl = config?.google_form_url?.trim();
-    const legacyTitle = config?.message_collection_title?.trim();
-    if (legacyUrl) {
-      forms = [{ title: legacyTitle || "各種フォーム", url: legacyUrl, description: "" }];
-    }
-  }
+  const forms = parseMessageForms(config);
 
   return NextResponse.json({
     forms,
@@ -105,17 +78,7 @@ export async function PATCH(request: NextRequest) {
   const { forms, announcement } = body;
 
   const validForms: MessageForm[] = Array.isArray(forms)
-    ? forms
-        .filter(
-          (f: unknown) =>
-            f && typeof f === "object" && typeof (f as MessageForm).title === "string" && typeof (f as MessageForm).url === "string"
-        )
-        .map((f: MessageForm) => ({
-          title: String(f.title).trim(),
-          url: String(f.url).trim(),
-          description: typeof f.description === "string" ? String(f.description).trim() : "",
-        }))
-        .filter((f) => f.url)
+    ? forms.map(coerceMessageForm).filter((f): f is MessageForm => f !== null)
     : [];
 
   const newFormsValue = JSON.stringify(validForms);

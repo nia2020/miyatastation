@@ -26,6 +26,7 @@ export default async function MemberCardPage() {
         memberName={profile.nickname?.trim() || profile.full_name || ""}
         memberNumber={profile.member_number}
         joinedAt={profile.created_at}
+        role={profile.role ?? "member"}
       />
     </div>
   );
