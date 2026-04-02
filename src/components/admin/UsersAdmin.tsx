@@ -36,6 +36,7 @@ export function UsersAdmin() {
     "member"
   );
   const [editCreatedAt, setEditCreatedAt] = useState("");
+  const [editBirthday, setEditBirthday] = useState("");
   const [resetPasswordResult, setResetPasswordResult] = useState<{
     email: string;
     newPassword: string;
@@ -197,6 +198,9 @@ export function UsersAdmin() {
     }
   };
 
+  const birthdayToInputValue = (b: string | null) =>
+    b ? b.slice(0, 10) : "";
+
   const handleStartEdit = (u: User) => {
     setEditingUser(u);
     setEditMemberNumber(u.member_number);
@@ -204,6 +208,7 @@ export function UsersAdmin() {
       u.role === "admin" ? "admin" : u.role === "poster" ? "poster" : "member"
     );
     setEditCreatedAt(formatDateForInput(u.created_at));
+    setEditBirthday(birthdayToInputValue(u.birthday));
   };
 
   const handleSaveEdit = async () => {
@@ -217,6 +222,7 @@ export function UsersAdmin() {
           member_number: editMemberNumber.trim(),
           role: editRole,
           created_at: editCreatedAt,
+          birthday: editBirthday.trim() || null,
         }),
       });
       const data = await res.json();
@@ -825,9 +831,20 @@ export function UsersAdmin() {
                       {u.nickname || "—"}
                     </td>
                     <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
-                      {u.birthday
-                        ? new Date(u.birthday).toLocaleDateString("ja-JP")
-                        : "—"}
+                      {editingUser?.id === u.id ? (
+                        <input
+                          type="date"
+                          value={editBirthday}
+                          onChange={(e) => setEditBirthday(e.target.value)}
+                          className="w-[11rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+                        />
+                      ) : u.birthday ? (
+                        new Date(u.birthday + "T00:00:00").toLocaleDateString(
+                          "ja-JP"
+                        )
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
                       {u.birthday_wish_name || "—"}

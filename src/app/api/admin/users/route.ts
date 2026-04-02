@@ -47,7 +47,7 @@ export async function GET() {
 }
 
 /**
- * 会員番号・登録日を更新（管理者のみ）
+ * 会員番号・役割・登録日・生年月日を更新（管理者のみ）
  */
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { userId, member_number, role, created_at } = body;
+  const { userId, member_number, role, created_at, birthday } = body;
 
   if (!userId) {
     return NextResponse.json(
@@ -83,6 +83,7 @@ export async function PATCH(request: NextRequest) {
     member_number?: string;
     role?: "member" | "admin" | "poster";
     created_at?: string;
+    birthday?: string | null;
     updated_at: string;
   } = {
     updated_at: new Date().toISOString(),
@@ -117,6 +118,26 @@ export async function PATCH(request: NextRequest) {
       );
     }
     updates.created_at = date.toISOString();
+  }
+
+  if (birthday !== undefined) {
+    if (birthday === null || birthday === "") {
+      updates.birthday = null;
+    } else if (typeof birthday === "string") {
+      const d = new Date(birthday);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json(
+          { error: "生年月日の形式が不正です" },
+          { status: 400 }
+        );
+      }
+      updates.birthday = d.toISOString().slice(0, 10);
+    } else {
+      return NextResponse.json(
+        { error: "生年月日の形式が不正です" },
+        { status: 400 }
+      );
+    }
   }
 
   try {

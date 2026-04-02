@@ -57,6 +57,40 @@ textarea::placeholder {
   }
 }
 
+/*
+ * 自動入力（オートフィル）：Chrome / Edge / Safari が適用する水色背景を抑止し、
+ * サイトのダーク／ライトに合わせる。端末・ブラウザごとの見え方差を減らす。
+ */
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark textarea:-webkit-autofill,
+html.dark textarea:-webkit-autofill:hover,
+html.dark textarea:-webkit-autofill:focus,
+html.dark select:-webkit-autofill,
+html.dark select:-webkit-autofill:hover,
+html.dark select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+}
+
+html:not(.dark) input:-webkit-autofill,
+html:not(.dark) input:-webkit-autofill:hover,
+html:not(.dark) input:-webkit-autofill:focus,
+html:not(.dark) textarea:-webkit-autofill,
+html:not(.dark) textarea:-webkit-autofill:hover,
+html:not(.dark) textarea:-webkit-autofill:focus,
+html:not(.dark) select:-webkit-autofill,
+html:not(.dark) select:-webkit-autofill:hover,
+html:not(.dark) select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #171717 !important;
+  caret-color: #171717;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
