@@ -216,13 +216,13 @@ export function ProfileEditForm({
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             required
-            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800"
+            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-400"
             placeholder="例: たろう"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
             誕生日（生年月日）
           </label>
           <div className="mt-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-4 py-2.5 text-slate-700 dark:text-slate-300">
@@ -256,7 +256,7 @@ export function ProfileEditForm({
               value={birthdayWishName}
               onChange={(e) => setBirthdayWishName(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-400"
               placeholder="例: たろうくん"
             />
           )}
