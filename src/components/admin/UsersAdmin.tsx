@@ -119,6 +119,24 @@ export function UsersAdmin() {
     return list;
   }, [filteredUsers, sortKey, sortAsc]);
 
+  const userStats = useMemo(() => {
+    let admin = 0;
+    let poster = 0;
+    let other = 0;
+    for (const u of users) {
+      if (u.role === "admin") admin += 1;
+      else if (u.role === "poster") poster += 1;
+      else other += 1;
+    }
+    return {
+      total: users.length,
+      admin,
+      poster,
+      management: admin + poster,
+      other,
+    };
+  }, [users]);
+
   const handleSort = (key: "member_number" | "created_at" | "full_name") => {
     if (sortKey === key) {
       setSortAsc((prev) => !prev);
@@ -673,20 +691,39 @@ export function UsersAdmin() {
           パスワードは「リセット」で新しいパスワードを発行し表示します。会員番号・役割・登録日は「編集」で変更できます。不要なアカウントは「削除」で削除できます（取り消し不可）。一括削除する場合はチェックボックスで選択し「選択したアカウントを削除」をクリックしてください。
         </p>
         {!loadingList && !listError && users.length > 0 && (
-          <div className="mb-4">
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="会員番号・氏名・ニックネーム・メールアドレスで検索..."
-              className="w-full max-w-md px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
-            {searchQuery && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {filteredUsers.length}件表示
-              </p>
-            )}
-          </div>
+          <>
+            <div className="mb-4 flex flex-wrap gap-x-6 gap-y-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+              <span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">合計</span>
+                <span className="ml-1.5 tabular-nums">{userStats.total}件</span>
+              </span>
+              <span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">管理ユーザー</span>
+                <span className="ml-1.5 tabular-nums">
+                  {userStats.management}件（管理者 {userStats.admin}・投稿者 {userStats.poster}）
+                </span>
+              </span>
+              <span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">その他</span>
+                <span className="ml-1.5 tabular-nums">{userStats.other}件</span>
+                <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">（メンバー等）</span>
+              </span>
+            </div>
+            <div className="mb-4">
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="会員番号・氏名・ニックネーム・メールアドレスで検索..."
+                className="w-full max-w-md px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              {searchQuery && (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {filteredUsers.length}件表示
+                </p>
+              )}
+            </div>
+          </>
         )}
         {selectedIds.size > 0 && (
           <div className="mb-4 flex items-center gap-3">
