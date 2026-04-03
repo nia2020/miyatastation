@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding/OnboardingForm";
 import { MemberHeader } from "@/components/layout/MemberHeader";
 import { MemberContentWrapper } from "@/components/layout/MemberContentWrapper";
+import { MemberFlagsLayout } from "@/components/layout/MemberFlagsLayout";
 
 export const dynamic = "force-dynamic";
 
@@ -97,14 +98,16 @@ export default async function MemberLayout({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {needsOnboarding && <OnboardingForm />}
-      <MemberHeader
-        profile={profile ?? null}
-        userEmail={user?.email ?? null}
-      />
+      <MemberFlagsLayout newFlags={newFlags}>
+        <MemberHeader
+          profile={profile ?? null}
+          userEmail={user?.email ?? null}
+        />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0 w-full overflow-x-hidden">
-        <MemberContentWrapper newFlags={newFlags}>{children}</MemberContentWrapper>
-      </main>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0 w-full overflow-x-hidden">
+          <MemberContentWrapper newFlags={newFlags}>{children}</MemberContentWrapper>
+        </main>
+      </MemberFlagsLayout>
     </div>
   );
 }
