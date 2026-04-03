@@ -559,76 +559,93 @@ export function UsersAdmin() {
     }
   };
 
+  const roleBadgeClass = (role: string) =>
+    role === "admin"
+      ? "text-amber-600 dark:text-amber-400 font-medium"
+      : role === "poster"
+        ? "text-indigo-600 dark:text-indigo-400 font-medium"
+        : role === "management_member"
+          ? "text-teal-700 dark:text-teal-400 font-medium"
+          : "text-slate-800 dark:text-slate-200";
+
   const renderAccountRow = (u: User) => (
     <tr key={u.id} className="border-b border-slate-100 dark:border-slate-700">
-      <td className="py-3 px-4">
+      <td className="py-2 pl-2 pr-1 align-top w-9">
         <input
           type="checkbox"
           checked={selectedIds.has(u.id)}
           onChange={() => handleToggleSelect(u.id)}
-          className="rounded border-slate-300 dark:border-slate-600"
+          className="rounded border-slate-300 dark:border-slate-600 mt-1"
         />
       </td>
-      <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">
+      <td className="py-2 px-1 font-mono text-slate-800 dark:text-slate-200 align-top whitespace-nowrap text-xs w-[4.5rem]">
         {editingUser?.id === u.id ? (
           <input
             type="text"
             value={editMemberNumber}
             onChange={(e) => setEditMemberNumber(e.target.value)}
-            className="w-24 px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="w-full min-w-0 px-1.5 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
           />
         ) : (
           u.member_number
         )}
       </td>
-      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.full_name}</td>
-      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
+      <td className="py-2 px-1 text-slate-800 dark:text-slate-200 align-top min-w-0 break-words">
+        {u.full_name}
+      </td>
+      <td className="py-2 px-1 text-slate-800 dark:text-slate-200 align-top min-w-0 break-words text-xs xl:text-sm">
         {editingUser?.id === u.id ? (
           <input
             type="text"
             value={editNickname}
             onChange={(e) => setEditNickname(e.target.value)}
             placeholder="未設定"
-            className="w-full min-w-[6rem] max-w-[14rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="w-full min-w-0 px-1.5 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
           />
         ) : (
           u.nickname || "—"
         )}
       </td>
-      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+      <td className="py-2 px-1 text-slate-700 dark:text-slate-300 align-top whitespace-nowrap text-xs">
         {editingUser?.id === u.id ? (
           <input
             type="date"
             value={editBirthday}
             onChange={(e) => setEditBirthday(e.target.value)}
-            className="w-[11rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="max-w-full px-1 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
           />
         ) : u.birthday ? (
-          new Date(u.birthday + "T00:00:00").toLocaleDateString("ja-JP")
+          new Date(u.birthday + "T00:00:00").toLocaleDateString("ja-JP", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
         ) : (
           "—"
         )}
       </td>
-      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
+      <td className="py-2 px-1 text-slate-800 dark:text-slate-200 align-top min-w-0 break-words text-xs xl:text-sm">
         {editingUser?.id === u.id ? (
           <input
             type="text"
             value={editBirthdayWishName}
             onChange={(e) => setEditBirthdayWishName(e.target.value)}
             placeholder="未設定"
-            className="w-full min-w-[6rem] max-w-[14rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="w-full min-w-0 px-1.5 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
           />
         ) : (
           u.birthday_wish_name || "—"
         )}
       </td>
-      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.email}</td>
-      <td className="py-3 px-4">
+      <td className="py-2 px-1 text-slate-800 dark:text-slate-200 align-top min-w-0 break-all text-xs">
+        {u.email}
+      </td>
+      <td className="py-2 px-1 align-top min-w-0">
         {editingUser?.id === u.id ? (
           <select
             value={editRole}
             onChange={(e) => setEditRole(e.target.value as EditRole)}
-            className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="max-w-full min-w-0 px-1 py-1 border border-slate-300 dark:border-slate-600 rounded text-xs dark:bg-slate-800"
           >
             <option value="member">メンバー</option>
             <option value="management_member">管理メンバー</option>
@@ -636,44 +653,34 @@ export function UsersAdmin() {
             <option value="poster">投稿者</option>
           </select>
         ) : (
-          <span
-            className={
-              u.role === "admin"
-                ? "text-amber-600 dark:text-amber-400 font-medium"
-                : u.role === "poster"
-                  ? "text-indigo-600 dark:text-indigo-400 font-medium"
-                  : u.role === "management_member"
-                    ? "text-teal-700 dark:text-teal-400 font-medium"
-                    : "text-slate-800 dark:text-slate-200"
-            }
-          >
+          <span className={`text-xs xl:text-sm ${roleBadgeClass(u.role)}`}>
             {roleLabel(u.role)}
           </span>
         )}
       </td>
-      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+      <td className="py-2 px-1 text-slate-700 dark:text-slate-300 align-top whitespace-nowrap text-xs">
         {u.must_change_password === true ? (
           <span className="text-amber-700 dark:text-amber-400 font-medium">未完了</span>
         ) : (
           <span className="text-slate-500 dark:text-slate-400">完了</span>
         )}
       </td>
-      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+      <td className="py-2 px-1 text-slate-700 dark:text-slate-300 align-top whitespace-nowrap text-xs">
         {editingUser?.id === u.id ? (
           <input
             type="date"
             value={editCreatedAt}
             onChange={(e) => setEditCreatedAt(e.target.value)}
-            className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+            className="max-w-full px-1 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
           />
         ) : (
           formatDate(u.created_at)
         )}
       </td>
-      <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-xs">
+      <td className="py-2 px-1 text-slate-600 dark:text-slate-400 align-top text-xs">
         {resetPasswordResult?.email === u.email ? (
-          <span className="flex items-center gap-2">
-            <span className="text-green-600 dark:text-green-400 font-mono">
+          <span className="flex flex-col gap-1 min-w-0">
+            <span className="text-green-600 dark:text-green-400 font-mono break-all">
               {resetPasswordResult.newPassword}
             </span>
             <button
@@ -681,7 +688,7 @@ export function UsersAdmin() {
               onClick={() =>
                 navigator.clipboard.writeText(resetPasswordResult.newPassword)
               }
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs"
+              className="text-indigo-600 dark:text-indigo-400 hover:underline text-left w-fit"
             >
               コピー
             </button>
@@ -690,36 +697,36 @@ export function UsersAdmin() {
           <button
             type="button"
             onClick={() => handleResetPassword(u.id, u.email)}
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+            className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
           >
             リセット
           </button>
         )}
       </td>
-      <td className="py-3 px-4">
+      <td className="py-2 pr-2 pl-1 align-top whitespace-nowrap">
         {editingUser?.id === u.id ? (
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-1 items-start">
             <button
               type="button"
               onClick={handleSaveEdit}
-              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+              className="text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
             >
               保存
             </button>
             <button
               type="button"
               onClick={() => setEditingUser(null)}
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              className="text-sm text-slate-500 dark:text-slate-400 hover:underline"
             >
               キャンセル
             </button>
           </div>
         ) : (
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-col gap-1 items-start">
             <button
               type="button"
               onClick={() => handleStartEdit(u)}
-              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+              className="text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
             >
               編集
             </button>
@@ -727,7 +734,7 @@ export function UsersAdmin() {
               type="button"
               onClick={() => handleDelete(u)}
               disabled={deletingUserId === u.id}
-              className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
+              className="text-sm text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
             >
               {deletingUserId === u.id ? "削除中..." : "削除"}
             </button>
@@ -737,6 +744,187 @@ export function UsersAdmin() {
     </tr>
   );
 
+  const renderAccountCard = (u: User) => (
+    <div
+      key={u.id}
+      className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800/60 p-4 space-y-3 shadow-sm"
+    >
+      <div className="flex justify-between gap-3 items-start">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-slate-800 dark:text-slate-200">{u.full_name}</p>
+          <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+            {u.member_number}
+          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 break-all mt-2">{u.email}</p>
+        </div>
+        <input
+          type="checkbox"
+          checked={selectedIds.has(u.id)}
+          onChange={() => handleToggleSelect(u.id)}
+          className="rounded border-slate-300 dark:border-slate-600 shrink-0 mt-1"
+        />
+      </div>
+
+      {editingUser?.id !== u.id && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+          <span>
+            <span className="text-slate-500">ニックネーム:</span> {u.nickname || "—"}
+          </span>
+          <span>
+            <span className="text-slate-500">誕生日:</span>{" "}
+            {u.birthday
+              ? new Date(u.birthday + "T00:00:00").toLocaleDateString("ja-JP")
+              : "—"}
+          </span>
+          <span>
+            <span className="text-slate-500">呼ばれたい名前:</span> {u.birthday_wish_name || "—"}
+          </span>
+          <span>
+            <span className="text-slate-500">役割: </span>
+            <span className={roleBadgeClass(u.role)}>{roleLabel(u.role)}</span>
+          </span>
+          <span>
+            <span className="text-slate-500">初回ログイン:</span>{" "}
+            {u.must_change_password === true ? (
+              <span className="text-amber-700 dark:text-amber-400 font-medium">未完了</span>
+            ) : (
+              "完了"
+            )}
+          </span>
+          <span>
+            <span className="text-slate-500">登録:</span> {formatDate(u.created_at)}
+          </span>
+        </div>
+      )}
+
+      {editingUser?.id === u.id && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+          <label className="block text-xs">
+            <span className="text-slate-500 block mb-1">会員番号</span>
+            <input
+              type="text"
+              value={editMemberNumber}
+              onChange={(e) => setEditMemberNumber(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            />
+          </label>
+          <label className="block text-xs">
+            <span className="text-slate-500 block mb-1">ニックネーム</span>
+            <input
+              type="text"
+              value={editNickname}
+              onChange={(e) => setEditNickname(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            />
+          </label>
+          <label className="block text-xs">
+            <span className="text-slate-500 block mb-1">誕生日</span>
+            <input
+              type="date"
+              value={editBirthday}
+              onChange={(e) => setEditBirthday(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            />
+          </label>
+          <label className="block text-xs sm:col-span-2">
+            <span className="text-slate-500 block mb-1">呼ばれたい名前</span>
+            <input
+              type="text"
+              value={editBirthdayWishName}
+              onChange={(e) => setEditBirthdayWishName(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            />
+          </label>
+          <label className="block text-xs sm:col-span-2">
+            <span className="text-slate-500 block mb-1">役割</span>
+            <select
+              value={editRole}
+              onChange={(e) => setEditRole(e.target.value as EditRole)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            >
+              <option value="member">メンバー</option>
+              <option value="management_member">管理メンバー</option>
+              <option value="admin">管理者</option>
+              <option value="poster">投稿者</option>
+            </select>
+          </label>
+          <label className="block text-xs sm:col-span-2">
+            <span className="text-slate-500 block mb-1">登録日</span>
+            <input
+              type="date"
+              value={editCreatedAt}
+              onChange={(e) => setEditCreatedAt(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-800"
+            />
+          </label>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+        {resetPasswordResult?.email === u.email ? (
+          <span className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-green-600 dark:text-green-400 break-all">
+              {resetPasswordResult.newPassword}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                navigator.clipboard.writeText(resetPasswordResult.newPassword)
+              }
+              className="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
+            >
+              コピー
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleResetPassword(u.id, u.email)}
+            className="text-sm text-indigo-600 dark:text-indigo-400 font-medium"
+          >
+            パスワードリセット
+          </button>
+        )}
+        {editingUser?.id === u.id ? (
+          <>
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold"
+            >
+              保存
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingUser(null)}
+              className="text-sm text-slate-500 dark:text-slate-400"
+            >
+              キャンセル
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => handleStartEdit(u)}
+              className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold"
+            >
+              編集
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(u)}
+              disabled={deletingUserId === u.id}
+              className="text-sm text-red-600 dark:text-red-400 font-medium disabled:opacity-50"
+            >
+              {deletingUserId === u.id ? "削除中..." : "削除"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   const AccountsTable = ({
     rows,
     selectAllScope,
@@ -744,89 +932,158 @@ export function UsersAdmin() {
     rows: User[];
     selectAllScope: User[];
   }) => (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-600">
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200 w-12">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectAllScope.length > 0 &&
-                    selectAllScope.every((u) => selectedIds.has(u.id))
-                  }
-                  onChange={() => handleSelectAllInList(selectAllScope)}
-                  className="rounded border-slate-300 dark:border-slate-600"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSelectAllInList(selectAllScope)}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                >
-                  全てにチェック
-                </button>
-              </div>
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              <button
-                type="button"
-                onClick={() => handleSort("member_number")}
-                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
-                会員番号
-                {sortKey === "member_number" && (sortAsc ? " ↑" : " ↓")}
-              </button>
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              <button
-                type="button"
-                onClick={() => handleSort("full_name")}
-                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
-                氏名
-                {sortKey === "full_name" && (sortAsc ? " ↑" : " ↓")}
-              </button>
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              ニックネーム
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              誕生日
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              呼ばれたい名前
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              メールアドレス（ログインID）
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              役割
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              初回ログイン
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              <button
-                type="button"
-                onClick={() => handleSort("created_at")}
-                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
-                登録日
-                {sortKey === "created_at" && (sortAsc ? " ↑" : " ↓")}
-              </button>
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              パスワード（リセット）
-            </th>
-            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-              操作
-            </th>
-          </tr>
-        </thead>
-        <tbody>{rows.map((u) => renderAccountRow(u))}</tbody>
-      </table>
-    </div>
+    <>
+      <p className="mb-3 text-xs text-slate-500 dark:text-slate-400 lg:hidden">
+        狭い画面ではカード表示します。一覧表は大きな画面（1024px以上）で表示されます。
+      </p>
+      <div className="lg:hidden space-y-3">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50/80 dark:bg-slate-900/40 px-3 py-2">
+          <input
+            type="checkbox"
+            checked={
+              selectAllScope.length > 0 &&
+              selectAllScope.every((u) => selectedIds.has(u.id))
+            }
+            onChange={() => handleSelectAllInList(selectAllScope)}
+            className="rounded border-slate-300 dark:border-slate-600"
+          />
+          <button
+            type="button"
+            onClick={() => handleSelectAllInList(selectAllScope)}
+            className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+          >
+            この一覧の全てにチェック
+          </button>
+          <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400 w-full sm:w-auto sm:ml-auto">
+            <button
+              type="button"
+              onClick={() => handleSort("member_number")}
+              className="hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              会員番号{sortKey === "member_number" && (sortAsc ? "↑" : "↓")}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSort("full_name")}
+              className="hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              氏名{sortKey === "full_name" && (sortAsc ? "↑" : "↓")}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSort("created_at")}
+              className="hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+              登録日{sortKey === "created_at" && (sortAsc ? "↑" : "↓")}
+            </button>
+          </div>
+        </div>
+        {rows.map((u) => renderAccountCard(u))}
+      </div>
+
+      <div className="hidden lg:block rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
+        <div className="overflow-x-auto max-w-full min-w-0">
+          <table className="w-full max-w-full text-sm table-fixed">
+            <colgroup>
+              <col className="w-[2rem]" />
+              <col className="w-[4.5rem]" />
+              <col className="w-[9%]" />
+              <col className="w-[8%]" />
+              <col className="w-[5.5rem]" />
+              <col className="w-[10%]" />
+              <col className="w-[18%]" />
+              <col className="w-[7rem]" />
+              <col className="w-[4rem]" />
+              <col className="w-[6.5rem]" />
+              <col className="w-[5.5rem]" />
+              <col className="w-[4.5rem]" />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-600 bg-slate-50/90 dark:bg-slate-900/50">
+                <th className="text-left py-2 pl-2 pr-1 font-medium text-slate-800 dark:text-slate-200 align-top">
+                  <div className="flex flex-col items-start gap-1">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectAllScope.length > 0 &&
+                        selectAllScope.every((u) => selectedIds.has(u.id))
+                      }
+                      onChange={() => handleSelectAllInList(selectAllScope)}
+                      className="rounded border-slate-300 dark:border-slate-600"
+                      title="一覧を選択"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleSelectAllInList(selectAllScope)}
+                      className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline leading-none"
+                    >
+                      全て
+                    </button>
+                  </div>
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 align-bottom">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("member_number")}
+                    className="text-left leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 text-xs"
+                  >
+                    会員番号
+                    {sortKey === "member_number" && (sortAsc ? " ↑" : " ↓")}
+                  </button>
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 align-bottom">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("full_name")}
+                    className="text-left leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 text-xs"
+                  >
+                    氏名
+                    {sortKey === "full_name" && (sortAsc ? " ↑" : " ↓")}
+                  </button>
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom">
+                  ニックネーム
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom whitespace-nowrap">
+                  誕生日
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom leading-tight">
+                  呼ばれたい名前
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom">
+                  メール
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom whitespace-nowrap">
+                  役割
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom leading-tight">
+                  初回
+                  <br />
+                  ログイン
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 align-bottom">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("created_at")}
+                    className="text-left leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 text-xs"
+                  >
+                    登録日
+                    {sortKey === "created_at" && (sortAsc ? " ↑" : " ↓")}
+                  </button>
+                </th>
+                <th className="text-left py-2 px-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom leading-tight">
+                  パスワード
+                </th>
+                <th className="text-left py-2 pr-2 pl-1 font-medium text-slate-800 dark:text-slate-200 text-xs align-bottom whitespace-nowrap">
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody>{rows.map((u) => renderAccountRow(u))}</tbody>
+          </table>
+        </div>
+      </div>
+    </>
   );
 
   return (
@@ -1017,7 +1274,7 @@ export function UsersAdmin() {
       </div>
 
       {/* アカウント一覧 */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 p-6 min-w-0 max-w-full">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
           アカウント一覧
         </h2>
