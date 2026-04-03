@@ -11,6 +11,7 @@ export type AdminUser = {
   birthday: string | null;
   birthday_wish_name: string | null;
   created_at: string;
+  must_change_password: boolean;
 };
 
 /**
@@ -37,7 +38,7 @@ export async function getUsersForAdmin(): Promise<AdminUser[] | null> {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("profiles")
-      .select("id, email, full_name, member_number, role, nickname, birthday, birthday_wish_name, created_at")
+      .select("id, email, full_name, member_number, role, nickname, birthday, birthday_wish_name, created_at, must_change_password")
       .order("created_at", { ascending: false });
 
     if (error) {

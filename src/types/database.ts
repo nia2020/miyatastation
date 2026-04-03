@@ -14,7 +14,7 @@ export interface Database {
           id: string;
           email: string;
           full_name: string;
-          role: "member" | "admin" | "poster";
+          role: "member" | "management_member" | "admin" | "poster";
           member_number: string;
           nickname: string | null;
           birthday: string | null;
@@ -28,7 +28,7 @@ export interface Database {
           id: string;
           email: string;
           full_name: string;
-          role?: "member" | "admin" | "poster";
+          role?: "member" | "management_member" | "admin" | "poster";
           member_number: string;
           nickname?: string | null;
           birthday?: string | null;
@@ -42,7 +42,7 @@ export interface Database {
           id?: string;
           email?: string;
           full_name?: string;
-          role?: "member" | "admin" | "poster";
+          role?: "member" | "management_member" | "admin" | "poster";
           member_number?: string;
           nickname?: string | null;
           birthday?: string | null;

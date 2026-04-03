@@ -29,7 +29,7 @@ export async function GET() {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("profiles")
-      .select("id, email, full_name, member_number, role, nickname, birthday, birthday_wish_name, created_at")
+      .select("id, email, full_name, member_number, role, nickname, birthday, birthday_wish_name, created_at, must_change_password")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -47,7 +47,7 @@ export async function GET() {
 }
 
 /**
- * 会員番号・役割・登録日・生年月日を更新（管理者のみ）
+ * 会員番号・役割・登録日・生年月日・ニックネーム・呼ばれたい名前を更新（管理者のみ）
  */
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -70,7 +70,15 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { userId, member_number, role, created_at, birthday } = body;
+  const {
+    userId,
+    member_number,
+    role,
+    created_at,
+    birthday,
+    nickname,
+    birthday_wish_name,
+  } = body;
 
   if (!userId) {
     return NextResponse.json(
@@ -81,18 +89,28 @@ export async function PATCH(request: NextRequest) {
 
   const updates: {
     member_number?: string;
-    role?: "member" | "admin" | "poster";
+    role?: "member" | "management_member" | "admin" | "poster";
     created_at?: string;
     birthday?: string | null;
+    nickname?: string | null;
+    birthday_wish_name?: string | null;
     updated_at: string;
   } = {
     updated_at: new Date().toISOString(),
   };
 
   if (role !== undefined) {
-    if (role !== "member" && role !== "admin" && role !== "poster") {
+    if (
+      role !== "member" &&
+      role !== "management_member" &&
+      role !== "admin" &&
+      role !== "poster"
+    ) {
       return NextResponse.json(
-        { error: "役割は「member」「admin」「poster」のいずれかを指定してください" },
+        {
+          error:
+            "役割は「member」「management_member」「admin」「poster」のいずれかを指定してください",
+        },
         { status: 400 }
       );
     }
@@ -135,6 +153,34 @@ export async function PATCH(request: NextRequest) {
     } else {
       return NextResponse.json(
         { error: "生年月日の形式が不正です" },
+        { status: 400 }
+      );
+    }
+  }
+
+  if (nickname !== undefined) {
+    if (nickname === null || nickname === "") {
+      updates.nickname = null;
+    } else if (typeof nickname === "string") {
+      const t = nickname.trim();
+      updates.nickname = t === "" ? null : t;
+    } else {
+      return NextResponse.json(
+        { error: "ニックネームの形式が不正です" },
+        { status: 400 }
+      );
+    }
+  }
+
+  if (birthday_wish_name !== undefined) {
+    if (birthday_wish_name === null || birthday_wish_name === "") {
+      updates.birthday_wish_name = null;
+    } else if (typeof birthday_wish_name === "string") {
+      const t = birthday_wish_name.trim();
+      updates.birthday_wish_name = t === "" ? null : t;
+    } else {
+      return NextResponse.json(
+        { error: "呼ばれたい名前の形式が不正です" },
         { status: 400 }
       );
     }

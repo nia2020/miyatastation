@@ -13,7 +13,64 @@ type User = {
   birthday: string | null;
   birthday_wish_name: string | null;
   created_at: string;
+  must_change_password?: boolean;
 };
+
+type EditRole = "member" | "management_member" | "admin" | "poster";
+
+function roleLabel(role: string): string {
+  if (role === "admin") return "管理者";
+  if (role === "poster") return "投稿者";
+  if (role === "management_member") return "管理メンバー";
+  return "メンバー";
+}
+
+function roleToEditRole(role: string): EditRole {
+  if (role === "admin" || role === "poster" || role === "management_member") {
+    return role;
+  }
+  return "member";
+}
+
+/** 管理画面・投稿・管理メンバーなど、会員一覧とは別枠で扱うアカウント */
+function isManagementAccount(role: string): boolean {
+  return (
+    role === "admin" ||
+    role === "poster" ||
+    role === "management_member"
+  );
+}
+
+function sortUsersByKey(
+  list: User[],
+  sortKey: "member_number" | "created_at" | "full_name" | null,
+  sortAsc: boolean
+): User[] {
+  const next = [...list];
+  if (!sortKey) return next;
+  next.sort((a, b) => {
+    if (sortKey === "member_number") {
+      const na = parseInt(a.member_number, 10);
+      const nb = parseInt(b.member_number, 10);
+      if (!isNaN(na) && !isNaN(nb)) {
+        const cmp = na - nb;
+        return sortAsc ? cmp : -cmp;
+      }
+      const cmp = a.member_number.localeCompare(b.member_number, "ja", { numeric: true });
+      return sortAsc ? cmp : -cmp;
+    }
+    if (sortKey === "created_at") {
+      const cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return sortAsc ? cmp : -cmp;
+    }
+    if (sortKey === "full_name") {
+      const cmp = a.full_name.localeCompare(b.full_name, "ja");
+      return sortAsc ? cmp : -cmp;
+    }
+    return 0;
+  });
+  return next;
+}
 
 export function UsersAdmin() {
   const [email, setEmail] = useState("");
@@ -32,11 +89,11 @@ export function UsersAdmin() {
   const [listError, setListError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editMemberNumber, setEditMemberNumber] = useState("");
-  const [editRole, setEditRole] = useState<"member" | "admin" | "poster">(
-    "member"
-  );
+  const [editRole, setEditRole] = useState<EditRole>("member");
   const [editCreatedAt, setEditCreatedAt] = useState("");
   const [editBirthday, setEditBirthday] = useState("");
+  const [editNickname, setEditNickname] = useState("");
+  const [editBirthdayWishName, setEditBirthdayWishName] = useState("");
   const [resetPasswordResult, setResetPasswordResult] = useState<{
     email: string;
     newPassword: string;
@@ -87,53 +144,52 @@ export function UsersAdmin() {
         u.nickname ?? "",
         u.birthday_wish_name ?? "",
         u.email,
-        u.role === "admin" ? "管理者" : u.role === "poster" ? "投稿者" : "メンバー",
+        roleLabel(u.role),
       ].some((v) => v.toLowerCase().includes(q))
     );
   }, [users, searchQuery]);
 
-  const sortedUsers = useMemo(() => {
-    const list = [...filteredUsers];
-    if (!sortKey) return list;
-    list.sort((a, b) => {
-      if (sortKey === "member_number") {
-        const na = parseInt(a.member_number, 10);
-        const nb = parseInt(b.member_number, 10);
-        if (!isNaN(na) && !isNaN(nb)) {
-          const cmp = na - nb;
-          return sortAsc ? cmp : -cmp;
-        }
-        const cmp = a.member_number.localeCompare(b.member_number, "ja", { numeric: true });
-        return sortAsc ? cmp : -cmp;
-      }
-      if (sortKey === "created_at") {
-        const cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        return sortAsc ? cmp : -cmp;
-      }
-      if (sortKey === "full_name") {
-        const cmp = a.full_name.localeCompare(b.full_name, "ja");
-        return sortAsc ? cmp : -cmp;
-      }
-      return 0;
-    });
-    return list;
-  }, [filteredUsers, sortKey, sortAsc]);
+  const filteredManagementUsers = useMemo(
+    () => filteredUsers.filter((u) => isManagementAccount(u.role)),
+    [filteredUsers]
+  );
+
+  const filteredMemberUsers = useMemo(
+    () => filteredUsers.filter((u) => !isManagementAccount(u.role)),
+    [filteredUsers]
+  );
+
+  const sortedManagementUsers = useMemo(
+    () => sortUsersByKey(filteredManagementUsers, sortKey, sortAsc),
+    [filteredManagementUsers, sortKey, sortAsc]
+  );
+
+  const sortedMemberUsers = useMemo(
+    () => sortUsersByKey(filteredMemberUsers, sortKey, sortAsc),
+    [filteredMemberUsers, sortKey, sortAsc]
+  );
 
   const userStats = useMemo(() => {
     let admin = 0;
     let poster = 0;
-    let other = 0;
+    let managementMember = 0;
+    let member = 0;
+    let pendingFirstLogin = 0;
     for (const u of users) {
+      if (u.must_change_password === true) pendingFirstLogin += 1;
       if (u.role === "admin") admin += 1;
       else if (u.role === "poster") poster += 1;
-      else other += 1;
+      else if (u.role === "management_member") managementMember += 1;
+      else member += 1;
     }
     return {
       total: users.length,
       admin,
       poster,
-      management: admin + poster,
-      other,
+      managementStaff: admin + poster,
+      managementMember,
+      member,
+      pendingFirstLogin,
     };
   }, [users]);
 
@@ -222,11 +278,11 @@ export function UsersAdmin() {
   const handleStartEdit = (u: User) => {
     setEditingUser(u);
     setEditMemberNumber(u.member_number);
-    setEditRole(
-      u.role === "admin" ? "admin" : u.role === "poster" ? "poster" : "member"
-    );
+    setEditRole(roleToEditRole(u.role));
     setEditCreatedAt(formatDateForInput(u.created_at));
     setEditBirthday(birthdayToInputValue(u.birthday));
+    setEditNickname(u.nickname ?? "");
+    setEditBirthdayWishName(u.birthday_wish_name ?? "");
   };
 
   const handleSaveEdit = async () => {
@@ -241,6 +297,8 @@ export function UsersAdmin() {
           role: editRole,
           created_at: editCreatedAt,
           birthday: editBirthday.trim() || null,
+          nickname: editNickname.trim() || null,
+          birthday_wish_name: editBirthdayWishName.trim() || null,
         }),
       });
       const data = await res.json();
@@ -283,12 +341,18 @@ export function UsersAdmin() {
     }
   };
 
-  const handleSelectAll = () => {
-    if (selectedIds.size === sortedUsers.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(sortedUsers.map((u) => u.id)));
-    }
+  const handleSelectAllInList = (list: User[]) => {
+    const allSelected =
+      list.length > 0 && list.every((u) => selectedIds.has(u.id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        list.forEach((u) => next.delete(u.id));
+      } else {
+        list.forEach((u) => next.add(u.id));
+      }
+      return next;
+    });
   };
 
   const handleToggleSelect = (userId: string) => {
@@ -495,6 +559,276 @@ export function UsersAdmin() {
     }
   };
 
+  const renderAccountRow = (u: User) => (
+    <tr key={u.id} className="border-b border-slate-100 dark:border-slate-700">
+      <td className="py-3 px-4">
+        <input
+          type="checkbox"
+          checked={selectedIds.has(u.id)}
+          onChange={() => handleToggleSelect(u.id)}
+          className="rounded border-slate-300 dark:border-slate-600"
+        />
+      </td>
+      <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">
+        {editingUser?.id === u.id ? (
+          <input
+            type="text"
+            value={editMemberNumber}
+            onChange={(e) => setEditMemberNumber(e.target.value)}
+            className="w-24 px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          />
+        ) : (
+          u.member_number
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.full_name}</td>
+      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
+        {editingUser?.id === u.id ? (
+          <input
+            type="text"
+            value={editNickname}
+            onChange={(e) => setEditNickname(e.target.value)}
+            placeholder="未設定"
+            className="w-full min-w-[6rem] max-w-[14rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          />
+        ) : (
+          u.nickname || "—"
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+        {editingUser?.id === u.id ? (
+          <input
+            type="date"
+            value={editBirthday}
+            onChange={(e) => setEditBirthday(e.target.value)}
+            className="w-[11rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          />
+        ) : u.birthday ? (
+          new Date(u.birthday + "T00:00:00").toLocaleDateString("ja-JP")
+        ) : (
+          "—"
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
+        {editingUser?.id === u.id ? (
+          <input
+            type="text"
+            value={editBirthdayWishName}
+            onChange={(e) => setEditBirthdayWishName(e.target.value)}
+            placeholder="未設定"
+            className="w-full min-w-[6rem] max-w-[14rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          />
+        ) : (
+          u.birthday_wish_name || "—"
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.email}</td>
+      <td className="py-3 px-4">
+        {editingUser?.id === u.id ? (
+          <select
+            value={editRole}
+            onChange={(e) => setEditRole(e.target.value as EditRole)}
+            className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          >
+            <option value="member">メンバー</option>
+            <option value="management_member">管理メンバー</option>
+            <option value="admin">管理者</option>
+            <option value="poster">投稿者</option>
+          </select>
+        ) : (
+          <span
+            className={
+              u.role === "admin"
+                ? "text-amber-600 dark:text-amber-400 font-medium"
+                : u.role === "poster"
+                  ? "text-indigo-600 dark:text-indigo-400 font-medium"
+                  : u.role === "management_member"
+                    ? "text-teal-700 dark:text-teal-400 font-medium"
+                    : "text-slate-800 dark:text-slate-200"
+            }
+          >
+            {roleLabel(u.role)}
+          </span>
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+        {u.must_change_password === true ? (
+          <span className="text-amber-700 dark:text-amber-400 font-medium">未完了</span>
+        ) : (
+          <span className="text-slate-500 dark:text-slate-400">完了</span>
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+        {editingUser?.id === u.id ? (
+          <input
+            type="date"
+            value={editCreatedAt}
+            onChange={(e) => setEditCreatedAt(e.target.value)}
+            className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
+          />
+        ) : (
+          formatDate(u.created_at)
+        )}
+      </td>
+      <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-xs">
+        {resetPasswordResult?.email === u.email ? (
+          <span className="flex items-center gap-2">
+            <span className="text-green-600 dark:text-green-400 font-mono">
+              {resetPasswordResult.newPassword}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                navigator.clipboard.writeText(resetPasswordResult.newPassword)
+              }
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs"
+            >
+              コピー
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleResetPassword(u.id, u.email)}
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+          >
+            リセット
+          </button>
+        )}
+      </td>
+      <td className="py-3 px-4">
+        {editingUser?.id === u.id ? (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+            >
+              保存
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingUser(null)}
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+            >
+              キャンセル
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2 items-center">
+            <button
+              type="button"
+              onClick={() => handleStartEdit(u)}
+              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+            >
+              編集
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(u)}
+              disabled={deletingUserId === u.id}
+              className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
+            >
+              {deletingUserId === u.id ? "削除中..." : "削除"}
+            </button>
+          </div>
+        )}
+      </td>
+    </tr>
+  );
+
+  const AccountsTable = ({
+    rows,
+    selectAllScope,
+  }: {
+    rows: User[];
+    selectAllScope: User[];
+  }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 dark:border-slate-600">
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200 w-12">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectAllScope.length > 0 &&
+                    selectAllScope.every((u) => selectedIds.has(u.id))
+                  }
+                  onChange={() => handleSelectAllInList(selectAllScope)}
+                  className="rounded border-slate-300 dark:border-slate-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSelectAllInList(selectAllScope)}
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  全てにチェック
+                </button>
+              </div>
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              <button
+                type="button"
+                onClick={() => handleSort("member_number")}
+                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                会員番号
+                {sortKey === "member_number" && (sortAsc ? " ↑" : " ↓")}
+              </button>
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              <button
+                type="button"
+                onClick={() => handleSort("full_name")}
+                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                氏名
+                {sortKey === "full_name" && (sortAsc ? " ↑" : " ↓")}
+              </button>
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              ニックネーム
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              誕生日
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              呼ばれたい名前
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              メールアドレス（ログインID）
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              役割
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              初回ログイン
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              <button
+                type="button"
+                onClick={() => handleSort("created_at")}
+                className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                登録日
+                {sortKey === "created_at" && (sortAsc ? " ↑" : " ↓")}
+              </button>
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              パスワード（リセット）
+            </th>
+            <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+              操作
+            </th>
+          </tr>
+        </thead>
+        <tbody>{rows.map((u) => renderAccountRow(u))}</tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
       {/* アカウント発行 */}
@@ -688,7 +1022,7 @@ export function UsersAdmin() {
           アカウント一覧
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-          パスワードは「リセット」で新しいパスワードを発行し表示します。会員番号・役割・登録日は「編集」で変更できます。不要なアカウントは「削除」で削除できます（取り消し不可）。一括削除する場合はチェックボックスで選択し「選択したアカウントを削除」をクリックしてください。
+          上から「管理系」（管理者・投稿者・管理メンバー）、下が「会員」（一般メンバー）です。パスワードは「リセット」で新しいパスワードを発行し表示します。会員番号・ニックネーム・誕生日・呼ばれたい名前・役割・登録日は「編集」で変更できます。不要なアカウントは「削除」で削除できます（取り消し不可）。一括削除する場合はチェックボックスで選択し「選択したアカウントを削除」をクリックしてください。
         </p>
         {!loadingList && !listError && users.length > 0 && (
           <>
@@ -700,13 +1034,24 @@ export function UsersAdmin() {
               <span>
                 <span className="font-medium text-slate-800 dark:text-slate-200">管理ユーザー</span>
                 <span className="ml-1.5 tabular-nums">
-                  {userStats.management}件（管理者 {userStats.admin}・投稿者 {userStats.poster}）
+                  {userStats.managementStaff}件（管理者 {userStats.admin}・投稿者 {userStats.poster}）
                 </span>
               </span>
               <span>
-                <span className="font-medium text-slate-800 dark:text-slate-200">その他</span>
-                <span className="ml-1.5 tabular-nums">{userStats.other}件</span>
-                <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">（メンバー等）</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">管理メンバー</span>
+                <span className="ml-1.5 tabular-nums">{userStats.managementMember}件</span>
+                <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">（メンバーと同じ権限）</span>
+              </span>
+              <span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">メンバー</span>
+                <span className="ml-1.5 tabular-nums">{userStats.member}件</span>
+              </span>
+              <span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">初回ログイン未完了</span>
+                <span className="ml-1.5 tabular-nums">{userStats.pendingFirstLogin}件</span>
+                <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">
+                  （パスワード未変更）
+                </span>
               </span>
             </div>
             <div className="mb-4">
@@ -719,7 +1064,8 @@ export function UsersAdmin() {
               />
               {searchQuery && (
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {filteredUsers.length}件表示
+                  管理系 {filteredManagementUsers.length}件 / 会員 {filteredMemberUsers.length}件（合計{" "}
+                  {filteredUsers.length}件）
                 </p>
               )}
             </div>
@@ -763,245 +1109,72 @@ export function UsersAdmin() {
           </div>
         ) : users.length === 0 ? (
           <p className="text-slate-500 dark:text-slate-400">アカウントはまだありません</p>
-        ) : filteredUsers.length === 0 ? (
-          <p className="text-slate-500 dark:text-slate-400">検索結果がありません。別のキーワードでお試しください。</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-600">
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200 w-12">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={sortedUsers.length > 0 && selectedIds.size === sortedUsers.length}
-                        onChange={handleSelectAll}
-                        className="rounded border-slate-300 dark:border-slate-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSelectAll}
-                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                      >
-                        全てにチェック
-                      </button>
-                    </div>
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("member_number")}
-                      className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                      会員番号
-                      {sortKey === "member_number" && (sortAsc ? " ↑" : " ↓")}
-                    </button>
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("full_name")}
-                      className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                      氏名
-                      {sortKey === "full_name" && (sortAsc ? " ↑" : " ↓")}
-                    </button>
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    ニックネーム
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    誕生日
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    お祝い用名前
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    メールアドレス（ログインID）
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    役割
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleSort("created_at")}
-                      className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                      登録日
-                      {sortKey === "created_at" && (sortAsc ? " ↑" : " ↓")}
-                    </button>
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    パスワード（リセット）
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
-                    操作
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedUsers.map((u) => (
-                  <tr key={u.id} className="border-b border-slate-100 dark:border-slate-700">
-                    <td className="py-3 px-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(u.id)}
-                        onChange={() => handleToggleSelect(u.id)}
-                        className="rounded border-slate-300 dark:border-slate-600"
-                      />
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-800 dark:text-slate-200">
-                      {editingUser?.id === u.id ? (
-                        <input
-                          type="text"
-                          value={editMemberNumber}
-                          onChange={(e) => setEditMemberNumber(e.target.value)}
-                          className="w-24 px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
-                        />
-                      ) : (
-                        u.member_number
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.full_name}</td>
-                    <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
-                      {u.nickname || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
-                      {editingUser?.id === u.id ? (
-                        <input
-                          type="date"
-                          value={editBirthday}
-                          onChange={(e) => setEditBirthday(e.target.value)}
-                          className="w-[11rem] px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
-                        />
-                      ) : u.birthday ? (
-                        new Date(u.birthday + "T00:00:00").toLocaleDateString(
-                          "ja-JP"
-                        )
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-800 dark:text-slate-200">
-                      {u.birthday_wish_name || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-slate-800 dark:text-slate-200">{u.email}</td>
-                    <td className="py-3 px-4">
-                      {editingUser?.id === u.id ? (
-                        <select
-                          value={editRole}
-                          onChange={(e) =>
-                            setEditRole(
-                              e.target.value as "member" | "admin" | "poster"
-                            )
-                          }
-                          className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
-                        >
-                          <option value="member">メンバー</option>
-                          <option value="admin">管理者</option>
-                          <option value="poster">投稿者</option>
-                        </select>
-                      ) : (
-                        <span
-                          className={
-                            u.role === "admin"
-                              ? "text-amber-600 dark:text-amber-400 font-medium"
-                              : u.role === "poster"
-                                ? "text-indigo-600 dark:text-indigo-400 font-medium"
-                                : "text-slate-800 dark:text-slate-200"
-                          }
-                        >
-                          {u.role === "admin"
-                            ? "管理者"
-                            : u.role === "poster"
-                              ? "投稿者"
-                              : "メンバー"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
-                      {editingUser?.id === u.id ? (
-                        <input
-                          type="date"
-                          value={editCreatedAt}
-                          onChange={(e) => setEditCreatedAt(e.target.value)}
-                          className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-800"
-                        />
-                      ) : (
-                        formatDate(u.created_at)
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-xs">
-                      {resetPasswordResult?.email === u.email ? (
-                        <span className="flex items-center gap-2">
-                          <span className="text-green-600 dark:text-green-400 font-mono">
-                            {resetPasswordResult.newPassword}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigator.clipboard.writeText(
-                                resetPasswordResult.newPassword
-                              )
-                            }
-                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs"
-                          >
-                            コピー
-                          </button>
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleResetPassword(u.id, u.email)}
-                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
-                        >
-                          リセット
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {editingUser?.id === u.id ? (
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={handleSaveEdit}
-                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
-                          >
-                            保存
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingUser(null)}
-                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                          >
-                            キャンセル
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2 items-center">
-                          <button
-                            type="button"
-                            onClick={() => handleStartEdit(u)}
-                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
-                          >
-                            編集
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(u)}
-                            disabled={deletingUserId === u.id}
-                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
-                          >
-                            {deletingUserId === u.id ? "削除中..." : "削除"}
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-10">
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">
+                管理系アカウント一覧
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                管理者・投稿者・管理メンバー
+                {searchQuery.trim() ? (
+                  <>
+                    {" "}
+                    <span className="tabular-nums">（検索結果 {filteredManagementUsers.length}件）</span>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <span className="tabular-nums">
+                      （全 {userStats.managementStaff + userStats.managementMember}件）
+                    </span>
+                  </>
+                )}
+              </p>
+              {sortedManagementUsers.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-3 border border-dashed border-slate-200 dark:border-slate-600 rounded-lg px-4">
+                  {searchQuery.trim()
+                    ? "検索条件に一致する管理系アカウントはありません。"
+                    : "管理系アカウントはまだ登録されていません。"}
+                </p>
+              ) : (
+                <AccountsTable
+                  rows={sortedManagementUsers}
+                  selectAllScope={sortedManagementUsers}
+                />
+              )}
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">
+                会員アカウント一覧
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                一般メンバー
+                {searchQuery.trim() ? (
+                  <>
+                    {" "}
+                    <span className="tabular-nums">（検索結果 {filteredMemberUsers.length}件）</span>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <span className="tabular-nums">（全 {userStats.member}件）</span>
+                  </>
+                )}
+              </p>
+              {sortedMemberUsers.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-3 border border-dashed border-slate-200 dark:border-slate-600 rounded-lg px-4">
+                  {searchQuery.trim()
+                    ? "検索条件に一致する会員はありません。"
+                    : "一般会員はまだ登録されていません。"}
+                </p>
+              ) : (
+                <AccountsTable
+                  rows={sortedMemberUsers}
+                  selectAllScope={sortedMemberUsers}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>

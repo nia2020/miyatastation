@@ -13,7 +13,7 @@ interface MemberCardDisplayProps {
   memberName: string;
   memberNumber: string;
   joinedAt: string;
-  role?: "member" | "admin" | "poster";
+  role?: "member" | "management_member" | "admin" | "poster";
 }
 
 export function MemberCardDisplay({

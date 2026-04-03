@@ -15,6 +15,7 @@
     "db:migrate-published-at": "node scripts/run-published-at-migration.js",
     "db:migrate-channel": "node scripts/run-channel-migration.js",
     "db:migrate-must-change-password": "node scripts/run-must-change-password-migration.js",
+    "db:migrate-management-member": "node scripts/run-management-member-migration.js",
     "db:set-admin": "node scripts/set-admin.js",
     "build": "next build",
     "start": "next start",

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 type AdminLayoutClientProps = {
-  role: "admin" | "poster" | "member";
+  role: "admin" | "poster" | "member" | "management_member";
   children: React.ReactNode;
 };
 
