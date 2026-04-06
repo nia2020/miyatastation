@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { broadcastNewAdminPostPush } from "@/lib/push/broadcast";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -90,6 +91,24 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    const inserted = data as {
+      channel?: string;
+      published_at?: string | null;
+    };
+    const pubAt = inserted.published_at
+      ? new Date(inserted.published_at)
+      : null;
+    const visibleNow = !pubAt || pubAt.getTime() <= Date.now();
+    if (visibleNow) {
+      const ch =
+        inserted.channel === "mk-room" ? "mk-room" : "feed";
+      void broadcastNewAdminPostPush({
+        title: String(title).trim(),
+        channel: ch,
+      }).catch((err) => console.error("Web Push broadcast:", err));
+    }
+
     return NextResponse.json({ post: data });
   }
 }

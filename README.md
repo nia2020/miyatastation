@@ -9,6 +9,7 @@
 - **デジタル会員証**: 会員名・会員番号・QRコード表示、画像ダウンロード
 - **週次フォーム**: テーマに沿った質問への回答、Googleスプレッドシートへ自動送信
 - **管理画面**: アカウント発行・イベント・フォームテーマの追加・編集・削除（管理者のみ）
+- **Web プッシュ通知**（任意）: プロフィール画面から登録。フィード／MK ROOM の新規投稿時にブラウザへ通知（VAPID・マイグレーション要）
 
 ## セットアップ
 
@@ -31,6 +32,7 @@ npm install
    - `20240306000000_birthday_celebrations.sql`
    - `20240307000000_profiles_select_authenticated.sql`
    - `20240308000000_user_section_views.sql`（NEW ラベル用・任意）
+   - `20240403000000_push_subscriptions.sql`（Web プッシュ通知・任意）
 4. Authentication > Providers > Email で以下を設定:
    - Email を有効化（デフォルトで有効）
    - **「Enable email signup」をオフ** にし、一般ユーザーの自己登録を無効化
@@ -47,7 +49,10 @@ cp .env.example .env.local
 |--------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase プロジェクト URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | アカウント発行に必須（管理者のみ） |
+| `SUPABASE_SERVICE_ROLE_KEY` | アカウント発行に必須（管理者のみ）。Web Push 配信時の購読データ削除にも使用 |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Web Push 用 VAPID 公開鍵（`npx web-push generate-vapid-keys`） |
+| `VAPID_PRIVATE_KEY` | Web Push 用 VAPID 秘密鍵（サーバーのみ・公開しない） |
+| `VAPID_SUBJECT` | Web Push の連絡先（例: `mailto:admin@example.com`） |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google サービスアカウントのメール |
 | `GOOGLE_PRIVATE_KEY` | サービスアカウントの秘密鍵（改行は `\n` でエスケープ） |
 | `GOOGLE_SPREADSHEET_ID` | スプレッドシート ID |

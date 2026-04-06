@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
+import { PushNotificationSettings } from "@/components/profile/PushNotificationSettings";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -38,6 +39,7 @@ export default async function ProfilePage() {
         initialAvatarUrl={profile.avatar_url ?? ""}
         canSetAvatar={canSetAvatar}
       />
+      <PushNotificationSettings />
     </div>
   );
 }
