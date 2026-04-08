@@ -9,6 +9,51 @@ const CARD_WIDTH = 384;
 
 const LOGO_PATH = "/member-card-logo.png";
 
+/** 入会からの経過に応じた「年次」1〜5（現在日時ベース） */
+function computeMembershipYear(now: Date, joinedAt: string): 1 | 2 | 3 | 4 | 5 {
+  const joined = new Date(joinedAt);
+  const oneYearLater = new Date(
+    joined.getFullYear() + 1,
+    joined.getMonth(),
+    1
+  );
+  const twoYearsLater = new Date(
+    joined.getFullYear() + 2,
+    joined.getMonth(),
+    1
+  );
+  const threeYearsLater = new Date(
+    joined.getFullYear() + 3,
+    joined.getMonth(),
+    1
+  );
+  const fiveYearsLater = new Date(
+    joined.getFullYear() + 5,
+    joined.getMonth(),
+    1
+  );
+  if (now < oneYearLater) return 1;
+  if (now < twoYearsLater) return 2;
+  if (now < threeYearsLater) return 3;
+  if (now < fiveYearsLater) return 4;
+  return 5;
+}
+
+const TIER_LABELS: Record<number, string> = {
+  1: "1年未満",
+  2: "2年目",
+  3: "3年目",
+  4: "4年目",
+  5: "5年目以降",
+};
+
+function bgColorForMemberTier(tier: 1 | 2 | 3 | 4 | 5): string {
+  if (tier === 1) return "#2d543e";
+  if (tier === 2) return "#1a365d";
+  if (tier === 3 || tier === 4) return "#c41e3a";
+  return "#000000";
+}
+
 interface MemberCardDisplayProps {
   memberName: string;
   memberNumber: string;
@@ -24,6 +69,9 @@ export function MemberCardDisplay({
 }: MemberCardDisplayProps) {
   const [now, setNow] = useState(() => new Date());
   const [isCapturing, setIsCapturing] = useState(false);
+  const [downloadDesign, setDownloadDesign] = useState<
+    "gold" | 1 | 2 | 3 | 4 | 5 | undefined
+  >(undefined);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,48 +98,20 @@ export function MemberCardDisplay({
     });
   };
 
-  // 入会年数（月で判定）
-  // 例：2025年2月23日入会 → 2026年2月1日から2年目、2027年2月1日から3年目、2029年2月1日から5年目
-  const membershipYear = (() => {
-    const joined = new Date(joinedAt);
-    const oneYearLater = new Date(
-      joined.getFullYear() + 1,
-      joined.getMonth(),
-      1
-    );
-    const twoYearsLater = new Date(
-      joined.getFullYear() + 2,
-      joined.getMonth(),
-      1
-    );
-    const threeYearsLater = new Date(
-      joined.getFullYear() + 3,
-      joined.getMonth(),
-      1
-    );
-    const fiveYearsLater = new Date(
-      joined.getFullYear() + 5,
-      joined.getMonth(),
-      1
-    );
-    if (now < oneYearLater) return 1; // 1年未満
-    if (now < twoYearsLater) return 2; // 2年目
-    if (now < threeYearsLater) return 3; // 3年目
-    if (now < fiveYearsLater) return 4; // 4年目
-    return 5; // 5年目以降
-  })();
+  const membershipYear = computeMembershipYear(now, joinedAt);
 
-  // 管理者・投稿者: ゴールド、1年未満: 緑、2年目: 濃紺、3-4年目: 赤、5年目以降: 黒
+  const isPrivileged =
+    role === "admin" || role === "poster" || role === "management_member";
+
+  /** プレビュー・ダウンロードに使うデザイン（未指定時は現在の年次・または特権ロールならゴールド） */
+  const effectiveDesign: "gold" | 1 | 2 | 3 | 4 | 5 =
+    downloadDesign ?? (isPrivileged ? "gold" : membershipYear);
+
+  // ゴールド: 管理者・管理メンバー・投稿者用。それ以外は年次ごとの会員カラー。
   const cardConfig =
-    role === "admin" || role === "poster"
+    effectiveDesign === "gold"
       ? { bgColor: "#d4af37" }
-      : membershipYear === 1
-        ? { bgColor: "#2d543e" }
-        : membershipYear === 2
-          ? { bgColor: "#1a365d" }
-          : membershipYear === 3 || membershipYear === 4
-            ? { bgColor: "#c41e3a" }
-            : { bgColor: "#000000" };
+      : { bgColor: bgColorForMemberTier(effectiveDesign) };
 
   const drawCardToCanvas = useCallback(
     async (ctx: CanvasRenderingContext2D) => {
@@ -146,6 +166,11 @@ export function MemberCardDisplay({
     [cardConfig.bgColor, memberName, memberNumber]
   );
 
+  const downloadFileStem =
+    effectiveDesign === "gold"
+      ? `会員証-${memberNumber}-ゴールド`
+      : `会員証-${memberNumber}-${TIER_LABELS[effectiveDesign]}`;
+
   const handleDownload = useCallback(async () => {
     setIsCapturing(true);
     try {
@@ -159,7 +184,7 @@ export function MemberCardDisplay({
       }
       await drawCardToCanvas(ctx);
       const link = document.createElement("a");
-      link.download = `会員証-${memberNumber}.png`;
+      link.download = `${downloadFileStem}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch (err) {
@@ -167,7 +192,7 @@ export function MemberCardDisplay({
     } finally {
       setIsCapturing(false);
     }
-  }, [memberNumber, drawCardToCanvas]);
+  }, [memberNumber, drawCardToCanvas, downloadFileStem]);
 
   const renderCardContent = (showShimmer: boolean) => (
     <>
@@ -241,7 +266,43 @@ export function MemberCardDisplay({
       >
         {renderCardContent(!isCapturing)}
       </div>
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-4 max-w-sm mx-auto w-full">
+        <div className="w-full space-y-2">
+          <label
+            htmlFor="member-card-design"
+            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
+            ダウンロード・表示するデザイン
+          </label>
+          <select
+            id="member-card-design"
+            value={effectiveDesign}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "gold") setDownloadDesign("gold");
+              else
+                setDownloadDesign(
+                  Number(v) as 1 | 2 | 3 | 4 | 5
+                );
+            }}
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-800 dark:text-slate-200"
+          >
+            {isPrivileged && (
+              <option value="gold">ゴールド（管理者・投稿者・管理メンバー）</option>
+            )}
+            {Array.from({ length: membershipYear }, (_, i) => i + 1).map(
+              (tier) => (
+                <option key={tier} value={tier}>
+                  {TIER_LABELS[tier]}
+                  {tier === membershipYear ? "（現在）" : ""}
+                </option>
+              )
+            )}
+          </select>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            現在は{TIER_LABELS[membershipYear]}です。過去の年次の見た目でも画像を保存できます。
+          </p>
+        </div>
         <button
           type="button"
           onClick={handleDownload}

@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: "Miyata Station | メンバー専用サイト",
   description: "Kazuya Miyata Online Community - メンバー専用サイト",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png", type: "image/png" }],
+  },
   openGraph: {
     url: "https://miyata-station.com",
     type: "website",

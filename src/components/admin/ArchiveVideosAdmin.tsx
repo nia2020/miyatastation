@@ -30,6 +30,15 @@ export function ArchiveVideosAdmin({ videos }: ArchiveVideosAdminProps) {
 
   const [formData, setFormData] = useState(defaultVideo);
 
+  /** datetime-local の値はタイムゾーン省略のため、サーバー（UTC）で new Date すると誤解釈される。ブラウザのローカル時刻として ISO UTC に直してから送る */
+  const datetimeLocalToUtcIso = (local: string): string => {
+    const d = new Date(local);
+    if (Number.isNaN(d.getTime())) {
+      throw new Error("日時の形式が正しくありません");
+    }
+    return d.toISOString();
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -40,8 +49,10 @@ export function ArchiveVideosAdmin({ videos }: ArchiveVideosAdminProps) {
           ...(editing ? { id: editing.id } : {}),
           title: formData.title,
           youtube_url: formData.youtube_url,
-          published_at: formData.published_at || undefined,
-          expires_at: formData.expires_at || null,
+          published_at: datetimeLocalToUtcIso(formData.published_at),
+          expires_at: formData.expires_at
+            ? datetimeLocalToUtcIso(formData.expires_at)
+            : null,
         }),
       });
 
@@ -92,41 +103,18 @@ export function ArchiveVideosAdmin({ videos }: ArchiveVideosAdminProps) {
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
-  const parseIsoToLocalDate = (iso: string): Date | null => {
-    const s = iso.trim();
-    if (!s) return null;
-    if (s.endsWith("Z") || s.endsWith("z") || /[+-]\d{2}:?\d{2}$/.test(s)) {
-      return new Date(s);
-    }
-    const m = s.match(
-      /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?$/
-    );
-    if (!m) return null;
-    const [, y, mo, d, h, min, sec] = m;
-    return new Date(
-      Date.UTC(
-        parseInt(y!, 10),
-        parseInt(mo!, 10) - 1,
-        parseInt(d!, 10),
-        parseInt(h!, 10),
-        parseInt(min!, 10),
-        parseInt(sec ?? "0", 10),
-        0
-      )
-    );
-  };
-
   const formatLocalForInput = (d: Date) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
   const toLocalDatetimeLocal = (iso: string) => {
-    const d = parseIsoToLocalDate(iso);
-    return d ? formatLocalForInput(d) : iso.slice(0, 16);
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
+    return formatLocalForInput(d);
   };
 
   const toLocalDateWith2359 = (iso: string) => {
-    const d = parseIsoToLocalDate(iso);
-    if (!d) return iso.slice(0, 16);
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T23:59`;
   };
 
