@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { notifyPostAuthorOfNewComment } from "@/lib/push/comment-notification";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -34,6 +35,12 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  void notifyPostAuthorOfNewComment({
+    postId: post_id as string,
+    commenterUserId: user.id,
+  }).catch((err) => console.error("comment push notify:", err));
+
   return NextResponse.json({ comment: data });
 }
 

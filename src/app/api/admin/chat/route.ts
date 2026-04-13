@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     const inserted = data as {
+      id: string;
       channel?: string;
       published_at?: string | null;
     };
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       void broadcastNewAdminPostPush({
         title: String(title).trim(),
         channel: ch,
+        postId: inserted.id,
       }).catch((err) => console.error("Web Push broadcast:", err));
     }
 

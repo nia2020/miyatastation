@@ -60,6 +60,8 @@ interface ChatPostProps {
   isAdmin?: boolean;
   isPoster?: boolean;
   isScheduled?: boolean;
+  /** URL の ?post= と一致するカードを強調 */
+  highlightPostId?: string | null;
   onPostUpdated?: () => void;
   onPostDeleted?: () => void;
 }
@@ -74,6 +76,7 @@ export function ChatPost({
   isAdmin,
   isPoster,
   isScheduled = false,
+  highlightPostId = null,
   onPostUpdated,
   onPostDeleted,
 }: ChatPostProps) {
@@ -298,8 +301,17 @@ export function ChatPost({
     }
   };
 
+  const isHighlighted = highlightPostId === post.id;
+
   return (
-    <article className="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
+    <article
+      id={`feed-post-${post.id}`}
+      className={`p-6 bg-white dark:bg-slate-800 rounded-xl border shadow-sm ${
+        isHighlighted
+          ? "border-indigo-500 ring-2 ring-indigo-400 ring-offset-2 dark:ring-offset-slate-950 border-slate-200 dark:border-slate-600"
+          : "border-slate-200 dark:border-slate-600"
+      }`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {editing ? (

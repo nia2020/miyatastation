@@ -1,10 +1,16 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ChatPost } from "@/components/chat/ChatPost";
 import { ChatPostForm } from "@/components/chat/ChatPostForm";
+import { ScrollToFeedPost } from "@/components/chat/ScrollToFeedPost";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardChatPage() {
+export default async function DashboardChatPage({
+  searchParams,
+}: {
+  searchParams?: { post?: string };
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -106,6 +112,8 @@ export default async function DashboardChatPage() {
       likes: (p.likes as Array<{ id: string; user_id: string }>) ?? [],
     }));
 
+  const highlightPostId = searchParams?.post?.trim() || null;
+
   const scheduledOrdered =
     (scheduledPosts ?? []).map((p) => ({
       ...p,
@@ -126,6 +134,9 @@ export default async function DashboardChatPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <ScrollToFeedPost />
+      </Suspense>
       <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
         フィード
       </h2>
@@ -158,6 +169,7 @@ export default async function DashboardChatPage() {
                 isAdmin={profile?.role === "admin"}
                 isPoster={profile?.role === "poster"}
                 isScheduled
+                highlightPostId={highlightPostId}
               />
             ))}
           </div>
@@ -183,6 +195,7 @@ export default async function DashboardChatPage() {
               currentUserId={user.id}
               isAdmin={profile?.role === "admin"}
               isPoster={profile?.role === "poster"}
+              highlightPostId={highlightPostId}
             />
           ))}
         </div>
