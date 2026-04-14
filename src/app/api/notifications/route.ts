@@ -23,10 +23,7 @@ export async function GET() {
 
   if (error) {
     if (isUserNotificationsTableMissing(error)) {
-      return NextResponse.json({
-        notifications: [],
-        setupRequired: true,
-      });
+      return NextResponse.json({ notifications: [] });
     }
     console.error("notifications list:", error);
     return NextResponse.json(

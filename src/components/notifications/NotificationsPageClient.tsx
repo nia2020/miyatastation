@@ -60,12 +60,10 @@ export function NotificationsPageClient() {
   const [items, setItems] = useState<UserNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [setupRequired, setSetupRequired] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    setSetupRequired(false);
     try {
       const res = await fetch("/api/notifications");
       if (res.status === 401) {
@@ -80,7 +78,6 @@ export function NotificationsPageClient() {
       }
       const data = await res.json();
       setItems(data.notifications ?? []);
-      setSetupRequired(data.setupRequired === true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "エラー");
     } finally {
@@ -189,22 +186,6 @@ export function NotificationsPageClient() {
           ) : null}
         </div>
       </div>
-
-      {setupRequired ? (
-        <div
-          className="rounded-xl border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-100"
-          role="status"
-        >
-          <p className="font-medium">お知らせ一覧のデータベースがまだありません</p>
-          <p className="mt-1 text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
-            Supabase の SQL Editor で、リポジトリの{" "}
-            <code className="text-xs bg-amber-100 dark:bg-amber-900/60 px-1 rounded">
-              supabase/migrations/20260414220000_user_notifications.sql
-            </code>{" "}
-            を実行すると、コメント通知がここに表示されます。
-          </p>
-        </div>
-      ) : null}
 
       <section className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">
