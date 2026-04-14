@@ -94,7 +94,7 @@ export function MemberHeader({ profile }: MemberHeaderProps) {
               href="/dashboard"
               className="hidden sm:inline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
             >
-              トップに��る
+              {"\u30c8\u30c3\u30d7\u306b\u623b\u308b"}
             </Link>
           </div>
 
