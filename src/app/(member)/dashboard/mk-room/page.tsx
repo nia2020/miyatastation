@@ -1,16 +1,10 @@
-import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ChatPost } from "@/components/chat/ChatPost";
 import { ChatPostForm } from "@/components/chat/ChatPostForm";
-import { ScrollToFeedPost } from "@/components/chat/ScrollToFeedPost";
 
 export const dynamic = "force-dynamic";
 
-export default async function MkRoomPage({
-  searchParams,
-}: {
-  searchParams?: { post?: string };
-}) {
+export default async function MkRoomPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -130,13 +124,8 @@ export default async function MkRoomPage({
       likes: (p.likes as Array<{ id: string; user_id: string }>) ?? [],
     }));
 
-  const highlightPostId = searchParams?.post?.trim() || null;
-
   return (
     <div className="space-y-6">
-      <Suspense fallback={null}>
-        <ScrollToFeedPost />
-      </Suspense>
       <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
         MK ROOM
       </h2>
@@ -169,7 +158,6 @@ export default async function MkRoomPage({
                 isAdmin={profile?.role === "admin"}
                 isPoster={profile?.role === "poster"}
                 isScheduled
-                highlightPostId={highlightPostId}
               />
             ))}
           </div>
@@ -195,7 +183,6 @@ export default async function MkRoomPage({
               currentUserId={user.id}
               isAdmin={profile?.role === "admin"}
               isPoster={profile?.role === "poster"}
-              highlightPostId={highlightPostId}
             />
           ))}
         </div>

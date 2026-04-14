@@ -33,7 +33,6 @@ npm install
    - `20240307000000_profiles_select_authenticated.sql`
    - `20240308000000_user_section_views.sql`（NEW ラベル用・任意）
    - `20240403000000_push_subscriptions.sql`（Web プッシュ通知・任意）
-   - `20260414220000_user_notifications.sql`（アプリ内お知らせ・コメント通知一覧）
 4. Authentication > Providers > Email で以下を設定:
    - Email を有効化（デフォルトで有効）
    - **「Enable email signup」をオフ** にし、一般ユーザーの自己登録を無効化

@@ -7,7 +7,7 @@ import { DashboardSidebar } from "./DashboardSidebar";
 import { BannerLinks } from "./BannerLinks";
 import { SectionViewTracker } from "@/components/dashboard/SectionViewTracker";
 
-type SectionId = "home" | "notifications" | "events" | "forms" | "chat";
+type SectionId = "home" | "events" | "forms" | "chat";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -19,15 +19,13 @@ export function DashboardShell({ children, newFlags }: DashboardShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const currentSection: SectionId =
-    pathname === "/dashboard/notifications"
-      ? "notifications"
-      : pathname === "/dashboard/events"
-        ? "events"
-        : pathname === "/dashboard/forms"
-          ? "forms"
-          : pathname === "/dashboard/chat"
-            ? "chat"
-            : "home";
+    pathname === "/dashboard/events"
+      ? "events"
+      : pathname === "/dashboard/forms"
+        ? "forms"
+        : pathname === "/dashboard/chat"
+          ? "chat"
+          : "home";
 
   const currentPage =
     pathname === "/member-card"

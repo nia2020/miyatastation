@@ -221,50 +221,6 @@ export interface Database {
           created_at?: string;
         };
       };
-      user_notifications: {
-        Row: {
-          id: string;
-          user_id: string;
-          kind: "comment_on_post";
-          actor_id: string | null;
-          actor_display_name: string;
-          actor_avatar_url: string | null;
-          post_id: string | null;
-          post_title: string;
-          comment_preview: string | null;
-          link_path: string;
-          read_at: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          kind: "comment_on_post";
-          actor_id?: string | null;
-          actor_display_name?: string;
-          actor_avatar_url?: string | null;
-          post_id?: string | null;
-          post_title?: string;
-          comment_preview?: string | null;
-          link_path: string;
-          read_at?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          kind?: "comment_on_post";
-          actor_id?: string | null;
-          actor_display_name?: string;
-          actor_avatar_url?: string | null;
-          post_id?: string | null;
-          post_title?: string;
-          comment_preview?: string | null;
-          link_path?: string;
-          read_at?: string | null;
-          created_at?: string;
-        };
-      };
       push_subscriptions: {
         Row: {
           id: string;
@@ -335,6 +291,4 @@ export type FormSubmission =
 export type AdminPost = Database["public"]["Tables"]["admin_posts"]["Row"];
 export type PostLike = Database["public"]["Tables"]["post_likes"]["Row"];
 export type PostComment = Database["public"]["Tables"]["post_comments"]["Row"];
-export type UserNotification =
-  Database["public"]["Tables"]["user_notifications"]["Row"];
 export type ArchiveVideo = Database["public"]["Tables"]["archive_videos"]["Row"];

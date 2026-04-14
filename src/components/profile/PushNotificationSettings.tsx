@@ -79,7 +79,7 @@ export function PushNotificationSettings() {
       }
       setSubscribed(true);
       setMessage(
-        "登録しました。新しい投稿は全員に、コメントは投稿者に通知されます（フィード・MK ROOM）。"
+        "登録しました。フィード・MK ROOM に新しい投稿があると通知されます。"
       );
     } catch (e) {
       setMessage(
@@ -161,10 +161,9 @@ export function PushNotificationSettings() {
         プッシュ通知
       </h3>
       <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-        新しい投稿は全員に、あなたの投稿へのコメントはあなたにだけプッシュします（フィード・MK
-        ROOM）。コメントは「お知らせ」ページにも一覧表示されます。Android の Chromeや PC
-        の Chrome などで利用しやすいです。iPhone
-        はホーム画面に追加した Web アプリなど、環境によっては通知できないことがあります。
+        フィード・MK ROOM に新しい投稿があったとき、ブラウザに通知します。Android の
+        Chrome や PC の Chrome などで利用しやすいです。iPhone はホーム画面に追加した
+        Web アプリなど、環境によっては通知できないことがあります。
       </p>
       {message && (
         <div className="mt-3 rounded-lg bg-slate-100 dark:bg-slate-700/80 p-3 text-sm text-slate-700 dark:text-slate-300">
