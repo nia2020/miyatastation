@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { isUserNotificationsTableMissing } from "@/lib/notifications/supabase-error";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -25,6 +26,9 @@ export async function POST(request: NextRequest) {
       .is("read_at", null);
 
     if (error) {
+      if (isUserNotificationsTableMissing(error)) {
+        return NextResponse.json({ ok: true });
+      }
       console.error("mark all read:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -42,6 +46,9 @@ export async function POST(request: NextRequest) {
     .eq("id", id);
 
   if (error) {
+    if (isUserNotificationsTableMissing(error)) {
+      return NextResponse.json({ ok: true });
+    }
     console.error("mark read:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

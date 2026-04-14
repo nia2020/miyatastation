@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { isUserNotificationsTableMissing } from "@/lib/notifications/supabase-error";
 
 const LIMIT = 80;
 
@@ -21,6 +22,12 @@ export async function GET() {
     .limit(LIMIT);
 
   if (error) {
+    if (isUserNotificationsTableMissing(error)) {
+      return NextResponse.json({
+        notifications: [],
+        setupRequired: true,
+      });
+    }
     console.error("notifications list:", error);
     return NextResponse.json(
       { error: "Failed to load notifications" },

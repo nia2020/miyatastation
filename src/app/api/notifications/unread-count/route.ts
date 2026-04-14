@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { isUserNotificationsTableMissing } from "@/lib/notifications/supabase-error";
 
 export async function GET() {
   const supabase = await createClient();
@@ -18,7 +19,9 @@ export async function GET() {
     .is("read_at", null);
 
   if (error) {
-    console.error("notifications unread count:", error);
+    if (!isUserNotificationsTableMissing(error)) {
+      console.error("notifications unread count:", error);
+    }
     return NextResponse.json({ count: 0 });
   }
 
