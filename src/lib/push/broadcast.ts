@@ -30,6 +30,8 @@ type WebPushPayload = {
   url: string;
   /** Notification tag for OS grouping */
   tag?: string;
+  /** Large image (HTTPS) for expanded notification where supported */
+  image?: string;
 };
 
 async function sendPushPayloadToRows(
@@ -72,6 +74,7 @@ export async function sendWebPushToUserIds(params: {
   body: string;
   url: string;
   tag?: string;
+  image?: string;
 }): Promise<void> {
   if (!configureWebPush() || params.userIds.length === 0) {
     return;
@@ -93,11 +96,17 @@ export async function sendWebPushToUserIds(params: {
     return;
   }
 
+  const image =
+    params.image?.startsWith("https://") || params.image?.startsWith("http://")
+      ? params.image
+      : undefined;
+
   await sendPushPayloadToRows(admin, rows, {
     title: params.title,
     body: params.body,
     url: params.url,
     ...(params.tag ? { tag: params.tag } : {}),
+    ...(image ? { image } : {}),
   });
 }
 

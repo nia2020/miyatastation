@@ -161,8 +161,9 @@ export function PushNotificationSettings() {
         プッシュ通知
       </h3>
       <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-        新しい投稿は全員に、あなたの投稿へのコメントはあなたにだけ通知します（フィード・MK
-        ROOM）。Android の Chrome や PC の Chrome などで利用しやすいです。iPhone
+        新しい投稿は全員に、あなたの投稿へのコメントはあなたにだけプッシュします（フィード・MK
+        ROOM）。コメントは「お知らせ」ページにも一覧表示されます。Android の Chromeや PC
+        の Chrome などで利用しやすいです。iPhone
         はホーム画面に追加した Web アプリなど、環境によっては通知できないことがあります。
       </p>
       {message && (

@@ -9,6 +9,7 @@ import {
   UserCircle,
   Video,
   FileText,
+  Bell,
 } from "lucide-react";
 import { useNewFlags } from "@/contexts/NewFlagsContext";
 
@@ -28,6 +29,12 @@ function MiyataLogoIcon({ className }: { className?: string }) {
 
 const SECTIONS = [
   { id: "home", label: "TOP", href: "/dashboard", icon: Home },
+  {
+    id: "notifications",
+    label: "お知らせ",
+    href: "/dashboard/notifications",
+    icon: Bell,
+  },
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
   { id: "forms", label: "各種フォーム", href: "/dashboard/forms", icon: MessageSquare },
   { id: "chat", label: "フィード", href: "/dashboard/chat", icon: Hash },

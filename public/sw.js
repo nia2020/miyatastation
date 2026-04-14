@@ -3,8 +3,9 @@ self.addEventListener("push", function (event) {
   var data = {
     title: "ミヤタステーション",
     body: "サイトを開いて内容を確認してください",
-    url: "/dashboard/chat",
+    url: "/dashboard/notifications",
     tag: "miyata-push-fallback",
+    image: "",
   };
   if (event.data) {
     try {
@@ -13,6 +14,7 @@ self.addEventListener("push", function (event) {
       if (json.body) data.body = json.body;
       if (json.url) data.url = json.url;
       if (json.tag) data.tag = json.tag;
+      if (json.image) data.image = json.image;
     } catch (_e) {
       /* ignore */
     }
@@ -25,6 +27,9 @@ self.addEventListener("push", function (event) {
     tag: data.tag,
     renotify: true,
   };
+  if (data.image && data.image.indexOf("http") === 0) {
+    opts.image = data.image;
+  }
   event.waitUntil(
     self.registration.showNotification(data.title, opts)
   );

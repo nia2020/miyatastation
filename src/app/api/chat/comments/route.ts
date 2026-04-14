@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
   void notifyPostAuthorOfNewComment({
     postId: post_id as string,
     commenterUserId: user.id,
+    commentText: content.trim(),
   }).catch((err) => console.error("comment push notify:", err));
 
   return NextResponse.json({ comment: data });

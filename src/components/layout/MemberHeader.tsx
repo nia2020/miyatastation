@@ -1,105 +1,54 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Bell } from "lucide-react";
-import { useNewFlags } from "@/contexts/NewFlagsContext";
 
-function HeaderNotifications() {
+function HeaderNotificationsBell() {
   const pathname = usePathname();
-  const newFlags = useNewFlags();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [unread, setUnread] = useState(0);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications/unread-count");
+      if (!res.ok) return;
+      const data = await res.json();
+      setUnread(typeof data.count === "number" ? data.count : 0);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
+    void refresh();
+  }, [refresh, pathname]);
+
+  useEffect(() => {
+    const t = setInterval(() => void refresh(), 60000);
+    return () => clearInterval(t);
+  }, [refresh]);
 
   if (pathname.startsWith("/admin")) {
     return null;
   }
 
-  const hasAny = newFlags.events || newFlags.forms || newFlags.chat;
-  const items = [
-    {
-      label: "イベント情報",
-      href: "/dashboard/events",
-      isNew: newFlags.events,
-    },
-    {
-      label: "各種フォーム",
-      href: "/dashboard/forms",
-      isNew: newFlags.forms,
-    },
-    {
-      label: "フィード（新しい投稿）",
-      href: "/dashboard/chat",
-      isNew: newFlags.chat,
-    },
-  ] as const;
-
   return (
-    <div className="relative shrink-0" ref={rootRef}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="relative p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        aria-label="更新のお知らせ"
-        aria-expanded={open}
-        aria-haspopup="true"
-      >
-        <Bell className="h-5 w-5" />
-        {hasAny ? (
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
-        ) : null}
-      </button>
-      {open ? (
-        <div
-          className="absolute right-0 mt-1 w-64 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg z-50 py-2 text-left"
-          role="menu"
-        >
-          <p className="px-3 pt-1 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            コンテンツの更新
-          </p>
-          <ul className="flex flex-col gap-0.5">
-            {items.map(({ label, href, isNew }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  role="menuitem"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <span>{label}</span>
-                  {isNew ? (
-                    <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded">
-                      NEW
-                    </span>
-                  ) : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className="px-3 pt-2 pb-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 mt-1">
-            コメントの案内はブラウザのプッシュ通知です（プロフィールで通知を ON にした場合）。タップすると該当の投稿が開きます。
-          </p>
-          {!hasAny ? (
-            <p className="px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
-              一覧に NEW はありません
-            </p>
-          ) : null}
-        </div>
+    <Link
+      href="/dashboard/notifications"
+      className="relative p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+      aria-label="お知らせ"
+    >
+      <Bell className="h-5 w-5" />
+      {unread > 0 ? (
+        <>
+          <span className="absolute top-1 right-1 min-w-[1.125rem] h-[1.125rem] px-1 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
+            {unread > 99 ? "99+" : unread}
+          </span>
+        </>
       ) : null}
-    </div>
+    </Link>
   );
 }
 
@@ -145,12 +94,12 @@ export function MemberHeader({ profile }: MemberHeaderProps) {
               href="/dashboard"
               className="hidden sm:inline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
             >
-              トップに戻る
+              トップに��る
             </Link>
           </div>
 
           <div className="flex items-center gap-1 md:gap-3 lg:gap-4 shrink-0">
-            <HeaderNotifications />
+            <HeaderNotificationsBell />
             <div className="hidden md:flex items-center gap-3 lg:gap-4">
               <Link
                 href="/member-card"
@@ -205,7 +154,6 @@ export function MemberHeader({ profile }: MemberHeaderProps) {
           </div>
         </div>
 
-        {/* モバイル: ドロップダウンメニュー */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-slate-200 dark:border-slate-700">
             <div className="flex flex-col gap-1">
@@ -215,6 +163,13 @@ export function MemberHeader({ profile }: MemberHeaderProps) {
                 className="px-4 py-3 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
               >
                 トップに戻る
+              </Link>
+              <Link
+                href="/dashboard/notifications"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-3 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"
+              >
+                お知らせ
               </Link>
               <Link
                 href="/member-card"
