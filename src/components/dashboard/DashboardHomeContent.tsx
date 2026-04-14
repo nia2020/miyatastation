@@ -76,11 +76,51 @@ const THEME_CLASSES: Record<
 };
 
 const HUB_LINKS = [
-  { href: "/dashboard/events", title: "イベント情報", description: "Zoomイベントのスケジュールと入室情報", icon: Calendar, theme: "amber" as CardTheme },
-  { href: "/dashboard/forms", title: "各種フォーム", description: "現在募集中のテーマ・メッセージ", icon: MessageSquare, theme: "emerald" as CardTheme },
-  { href: "/dashboard/chat", title: "フィード", description: "コミュニティの投稿を確認", icon: Hash, theme: "violet" as CardTheme },
-  { href: "/dashboard/mk-room", title: "MK ROOM", description: "宮田 和弥 秘密の部屋", icon: null, theme: "gold" as CardTheme },
-  { href: "/dashboard/archive-videos", title: "アーカイブ動画", description: "期間限定で公開中の動画を視聴", icon: Video, theme: "rose" as CardTheme },
+  {
+    key: "events",
+    href: "/dashboard/events",
+    title: "イベント情報",
+    description: "Zoomイベントのスケジュールと入室情報",
+    icon: Calendar,
+    theme: "amber" as CardTheme,
+    newFlag: "events" as const,
+  },
+  {
+    key: "message-collection",
+    href: "/dashboard/forms#message-collection",
+    title: "メッセージ募集",
+    description: "テーマ・メッセージの募集フォーム",
+    icon: MessageSquare,
+    theme: "emerald" as CardTheme,
+    newFlag: "messageCollection" as const,
+  },
+  {
+    key: "google-forms",
+    href: "/dashboard/forms#google-forms",
+    title: "各種フォーム",
+    description: "Googleフォームへのリンク",
+    icon: MessageSquare,
+    theme: "emerald" as CardTheme,
+    newFlag: "googleForms" as const,
+  },
+  {
+    key: "chat",
+    href: "/dashboard/chat",
+    title: "フィード",
+    description: "コミュニティの投稿を確認",
+    icon: Hash,
+    theme: "violet" as CardTheme,
+    newFlag: "chat" as const,
+  },
+  {
+    key: "mk-room",
+    href: "/dashboard/mk-room",
+    title: "MK ROOM",
+    description: "宮田 和弥 秘密の部屋",
+    icon: null,
+    theme: "gold" as CardTheme,
+    newFlag: null,
+  },
 ] as const;
 
 interface DashboardHomeContentProps {
@@ -101,7 +141,7 @@ export function DashboardHomeContent({
       {announcement && (
         <div className="rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 p-5">
           <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2">
-            📢 運営からのお知らせ
+            {"\ud83d\udce2 \u904b\u55b6\u304b\u3089\u306e\u304a\u77e5\u3089\u305b"}
           </p>
           <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
             {announcement}
@@ -140,17 +180,14 @@ export function DashboardHomeContent({
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 overflow-visible">
-        {HUB_LINKS.slice(0, 4).map((link) => {
-          const { href, title, description, icon: Icon, theme } = link;
+        {HUB_LINKS.map((link) => {
+          const { key, href, title, description, icon: Icon, theme, newFlag } = link;
           const t = THEME_CLASSES[theme];
           const useLogoIcon = href === "/dashboard/mk-room";
-          const isNew =
-            (href.includes("/events") && newFlags.events) ||
-            (href.includes("/forms") && newFlags.forms) ||
-            (href.includes("/chat") && newFlags.chat);
+          const isNew = newFlag ? newFlags[newFlag] : false;
           return (
             <Link
-              key={href}
+              key={key}
               href={href}
               className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-6 transition-all duration-300 hover:scale-[1.02] hover:z-10 ${t.cardBg} ${t.hoverBorder} ${t.hoverShadow}`}
             >
@@ -189,6 +226,11 @@ export function DashboardHomeContent({
             href="/dashboard/archive-videos"
             className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-6 transition-all duration-300 hover:scale-[1.02] hover:z-10 min-w-0 flex-1 ${THEME_CLASSES.rose.cardBg} ${THEME_CLASSES.rose.hoverBorder} ${THEME_CLASSES.rose.hoverShadow}`}
           >
+            {newFlags.archiveVideos ? (
+              <span className="absolute top-3 right-3 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded">
+                NEW
+              </span>
+            ) : null}
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg overflow-hidden transition-transform duration-300 ${THEME_CLASSES.rose.iconBg} ${THEME_CLASSES.rose.iconText} ${THEME_CLASSES.rose.iconHover}`}>
               <Video className="h-6 w-6" />
             </div>
@@ -197,7 +239,7 @@ export function DashboardHomeContent({
                 アーカイブ動画
               </h3>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                期間限定で公開中の動画を視聴
+                {"\u671f\u9593\u9650\u5b9a\u3067\u516c\u958b\u4e2d\u306e\u52d5\u753b\u3092\u8996\u8074"}
               </p>
             </div>
           </Link>
@@ -214,7 +256,7 @@ export function DashboardHomeContent({
                 <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-sky-500 transition-colors" />
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                メンバーサイトのご利用に関する案内を確認
+                {"\u30e1\u30f3\u30d0\u30fc\u30b5\u30a4\u30c8\u306e\u3054\u5229\u7528\u306b\u95a2\u3059\u308b\u6848\u5185\u3092\u78ba\u8a8d"}
               </p>
             </div>
           </Link>

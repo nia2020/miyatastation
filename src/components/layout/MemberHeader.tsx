@@ -28,22 +28,42 @@ function HeaderNotifications() {
     return null;
   }
 
-  const hasAny = newFlags.events || newFlags.forms || newFlags.chat;
+  const hasAny =
+    newFlags.events ||
+    newFlags.messageCollection ||
+    newFlags.googleForms ||
+    newFlags.chat ||
+    newFlags.archiveVideos;
   const items = [
     {
+      key: "events",
       label: "イベント情報",
       href: "/dashboard/events",
       isNew: newFlags.events,
     },
     {
-      label: "各種フォーム",
-      href: "/dashboard/forms",
-      isNew: newFlags.forms,
+      key: "message-collection",
+      label: "メッセージ募集",
+      href: "/dashboard/forms#message-collection",
+      isNew: newFlags.messageCollection,
     },
     {
+      key: "google-forms",
+      label: "各種フォーム",
+      href: "/dashboard/forms#google-forms",
+      isNew: newFlags.googleForms,
+    },
+    {
+      key: "chat",
       label: "フィード",
       href: "/dashboard/chat",
       isNew: newFlags.chat,
+    },
+    {
+      key: "archive-videos",
+      label: "アーカイブ動画",
+      href: "/dashboard/archive-videos",
+      isNew: newFlags.archiveVideos,
     },
   ] as const;
 
@@ -71,8 +91,8 @@ function HeaderNotifications() {
             コンテンツの更新
           </p>
           <ul className="flex flex-col gap-0.5">
-            {items.map(({ label, href, isNew }) => (
-              <li key={href}>
+            {items.map(({ key, label, href, isNew }) => (
+              <li key={key}>
                 <Link
                   href={href}
                   role="menuitem"

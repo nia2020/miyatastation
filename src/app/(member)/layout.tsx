@@ -15,7 +15,13 @@ export default async function MemberLayout({
   const supabase = await createClient();
   let user;
   let profile;
-  let newFlags = { events: false, forms: false, chat: false };
+  let newFlags = {
+    events: false,
+    messageCollection: false,
+    googleForms: false,
+    chat: false,
+    archiveVideos: false,
+  };
 
   try {
     const { data } = await supabase.auth.getUser();
@@ -37,6 +43,12 @@ export default async function MemberLayout({
           .select("key, value, updated_at")
           .in("key", ["message_collection_forms", "google_form_url"]),
         supabase.from("admin_posts").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase
+          .from("archive_videos")
+          .select("updated_at")
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]),
       supabase.from("user_section_views").select("section, last_viewed_at").eq("user_id", user!.id),
     ]);
@@ -54,13 +66,13 @@ export default async function MemberLayout({
       siteConfigRows.map((r: { key: string; value: string | null; updated_at: string }) => [r.key, r])
     );
     const formsRow = siteConfigMap.message_collection_forms;
-    const formsLastUpdate = formsRow?.updated_at ?? null;
-    let formsHasContent = false;
+    const googleRow = siteConfigMap.google_form_url;
+    let hasMessageCollectionContent = false;
     if (formsRow?.value?.trim()) {
       try {
         const arr = JSON.parse(formsRow.value) as unknown;
         if (Array.isArray(arr)) {
-          formsHasContent = arr.some(
+          hasMessageCollectionContent = arr.some(
             (f: unknown) =>
               f &&
               typeof f === "object" &&
@@ -72,18 +84,28 @@ export default async function MemberLayout({
         /* ignore */
       }
     }
-    if (!formsHasContent && siteConfigMap.google_form_url?.value?.trim()) {
-      formsHasContent = true;
-    }
-    const hasFormsContent = formsHasContent;
+    const hasGoogleFormContent = !!googleRow?.value?.trim();
+    const msgLastUpdate = formsRow?.updated_at ?? null;
+    const googleLastUpdate = googleRow?.updated_at ?? null;
+    const legacyFormsViewed = lastViewedMap.forms;
+    const msgViewedAt = lastViewedMap.message_collection ?? legacyFormsViewed;
+    const googleViewedAt = lastViewedMap.google_forms ?? legacyFormsViewed;
     const chatLastUpdate = contentUpdates[2].data?.created_at;
+    const archiveLastUpdate = contentUpdates[3].data?.updated_at;
     newFlags = {
       events: !!eventsLastUpdate && new Date(eventsLastUpdate) > new Date(lastViewedMap.events ?? 0),
-      forms:
-        !!formsLastUpdate &&
-        new Date(formsLastUpdate) > new Date(lastViewedMap.forms ?? 0) &&
-        hasFormsContent,
+      messageCollection:
+        !!msgLastUpdate &&
+        new Date(msgLastUpdate) > new Date(msgViewedAt ?? 0) &&
+        hasMessageCollectionContent,
+      googleForms:
+        !!googleLastUpdate &&
+        new Date(googleLastUpdate) > new Date(googleViewedAt ?? 0) &&
+        hasGoogleFormContent,
       chat: !!chatLastUpdate && new Date(chatLastUpdate) > new Date(lastViewedMap.chat ?? 0),
+      archiveVideos:
+        !!archiveLastUpdate &&
+        new Date(archiveLastUpdate) > new Date(lastViewedMap.archive_videos ?? 0),
     };
   } catch (e) {
     console.error("Member layout content fetch error:", e);

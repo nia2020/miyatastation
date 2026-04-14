@@ -40,27 +40,36 @@ export function coerceMessageForm(f: unknown): MessageForm | null {
   return { url, sections: [{ title, description }] };
 }
 
-export function parseMessageForms(configMap: Record<string, string | null> | null | undefined) {
-  let forms: MessageForm[] = [];
+/** メッセージ募集（JSON）と各種フォーム（Google URL）を分離（同一ページで両方表示する用） */
+export function splitMessageForms(
+  configMap: Record<string, string | null> | null | undefined
+): { messageCollection: MessageForm[]; googleForm: MessageForm | null } {
+  let messageCollection: MessageForm[] = [];
   try {
     const parsed = configMap?.message_collection_forms?.trim();
     if (parsed) {
       const arr = JSON.parse(parsed) as unknown;
       if (Array.isArray(arr)) {
-        forms = arr.map(coerceMessageForm).filter((f): f is MessageForm => f !== null);
+        messageCollection = arr.map(coerceMessageForm).filter((f): f is MessageForm => f !== null);
       }
     }
   } catch {
     /* ignore */
   }
-  if (forms.length === 0 && configMap?.google_form_url?.trim()) {
+  let googleForm: MessageForm | null = null;
+  if (configMap?.google_form_url?.trim()) {
     const title = configMap?.message_collection_title?.trim() || "各種フォーム";
-    forms = [
-      {
-        url: configMap.google_form_url.trim(),
-        sections: [{ title, description: "" }],
-      },
-    ];
+    googleForm = {
+      url: configMap.google_form_url.trim(),
+      sections: [{ title, description: "" }],
+    };
   }
-  return forms;
+  return { messageCollection, googleForm };
+}
+
+export function parseMessageForms(configMap: Record<string, string | null> | null | undefined) {
+  const { messageCollection, googleForm } = splitMessageForms(configMap);
+  if (messageCollection.length > 0) return messageCollection;
+  if (googleForm) return [googleForm];
+  return [];
 }

@@ -29,7 +29,12 @@ function MiyataLogoIcon({ className }: { className?: string }) {
 const SECTIONS = [
   { id: "home", label: "TOP", href: "/dashboard", icon: Home },
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
-  { id: "forms", label: "各種フォーム", href: "/dashboard/forms", icon: MessageSquare },
+  {
+    id: "forms",
+    label: "メッセージ募集・各種フォーム",
+    href: "/dashboard/forms",
+    icon: MessageSquare,
+  },
   { id: "chat", label: "フィード", href: "/dashboard/chat", icon: Hash },
   { id: "mk-room", label: "MK ROOM", href: "/dashboard/mk-room", icon: MiyataLogoIcon },
   { id: "archive-videos", label: "アーカイブ動画", href: "/dashboard/archive-videos", icon: Video },
@@ -45,7 +50,13 @@ interface DashboardSidebarProps {
   currentPage?: "dashboard" | "member-card" | "profile" | "archive-videos" | "mk-room" | "usage-guide";
   currentSection?: string;
   /** @deprecated useNewFlags から取得するため未使用。後方互換のため残す */
-  newFlags?: { events?: boolean; forms?: boolean; chat?: boolean };
+  newFlags?: {
+    events?: boolean;
+    messageCollection?: boolean;
+    googleForms?: boolean;
+    chat?: boolean;
+    archiveVideos?: boolean;
+  };
   /** モバイルドロワー用：リンククリック時に閉じるコールバック */
   onLinkClick?: () => void;
 }
@@ -64,8 +75,9 @@ export function DashboardSidebar({
         {SECTIONS.map(({ id, label, href, icon: Icon }) => {
           const isNew =
             (id === "events" && newFlags.events) ||
-            (id === "forms" && newFlags.forms) ||
-            (id === "chat" && newFlags.chat);
+            (id === "forms" && (newFlags.messageCollection || newFlags.googleForms)) ||
+            (id === "chat" && newFlags.chat) ||
+            (id === "archive-videos" && newFlags.archiveVideos);
           return (
             <Link
               key={id}

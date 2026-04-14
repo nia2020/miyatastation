@@ -11,7 +11,13 @@ type SectionId = "home" | "events" | "forms" | "chat";
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  newFlags: { events: boolean; forms: boolean; chat: boolean };
+  newFlags: {
+    events: boolean;
+    messageCollection: boolean;
+    googleForms: boolean;
+    chat: boolean;
+    archiveVideos: boolean;
+  };
 }
 
 export function DashboardShell({ children, newFlags }: DashboardShellProps) {

@@ -5,7 +5,13 @@ import { DashboardShell } from "./DashboardShell";
 
 interface MemberContentWrapperProps {
   children: React.ReactNode;
-  newFlags: { events: boolean; forms: boolean; chat: boolean };
+  newFlags: {
+    events: boolean;
+    messageCollection: boolean;
+    googleForms: boolean;
+    chat: boolean;
+    archiveVideos: boolean;
+  };
 }
 
 export function MemberContentWrapper({
