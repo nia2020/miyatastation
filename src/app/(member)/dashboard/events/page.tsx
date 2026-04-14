@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getStartOfTodayJstIso } from "@/lib/event-datetime";
 import type { Event } from "@/types/database";
 import { EventCard } from "@/components/events/EventCard";
 
@@ -12,16 +13,18 @@ export default async function DashboardEventsPage() {
 
   if (!user) return null;
 
+  const calendarBoundaryIso = getStartOfTodayJstIso();
+
   const [upcoming, past] = await Promise.all([
     supabase
       .from("events")
       .select("*")
-      .gte("event_date", new Date().toISOString())
+      .gte("event_date", calendarBoundaryIso)
       .order("event_date", { ascending: true }),
     supabase
       .from("events")
       .select("*")
-      .lt("event_date", new Date().toISOString())
+      .lt("event_date", calendarBoundaryIso)
       .order("event_date", { ascending: false })
       .limit(5),
   ]);
