@@ -44,12 +44,12 @@ export async function notifyPostAuthorOfNewComment(params: {
   const titleShort =
     titleText.length > 42 ? `${titleText.slice(0, 42)}…` : titleText;
 
-  const body = `${commenterName}さんがあなたの投稿「${titleShort}」にコメントしました`.slice(
-    0,
-    180
-  );
-
   const channel = post.channel === "mk-room" ? "mk-room" : "feed";
+  const placeLabel = channel === "mk-room" ? "MK ROOM" : "フィード";
+  const pushTitle = `${placeLabel}：あなたの投稿にコメント`.slice(0, 64);
+  const body =
+    `${commenterName}さんが「${titleShort}」に書き込みました`.slice(0, 180);
+
   const basePath =
     channel === "mk-room" ? "/dashboard/mk-room" : "/dashboard/chat";
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
@@ -58,8 +58,9 @@ export async function notifyPostAuthorOfNewComment(params: {
 
   await sendWebPushToUserIds({
     userIds: [post.author_id],
-    title: "ミヤタステーション",
+    title: pushTitle,
     body,
     url: openUrl,
+    tag: `miyata-comment-${params.postId}-${Date.now()}`,
   });
 }

@@ -24,10 +24,18 @@ type SubscriptionRow = {
   auth: string;
 };
 
+type WebPushPayload = {
+  title: string;
+  body: string;
+  url: string;
+  /** Notification tag for OS grouping */
+  tag?: string;
+};
+
 async function sendPushPayloadToRows(
   admin: AdminSupabase,
   rows: SubscriptionRow[],
-  payload: { title: string; body: string; url: string }
+  payload: WebPushPayload
 ): Promise<void> {
   const payloadJson = JSON.stringify(payload);
   const staleIds: string[] = [];
@@ -63,6 +71,7 @@ export async function sendWebPushToUserIds(params: {
   title: string;
   body: string;
   url: string;
+  tag?: string;
 }): Promise<void> {
   if (!configureWebPush() || params.userIds.length === 0) {
     return;
@@ -88,6 +97,7 @@ export async function sendWebPushToUserIds(params: {
     title: params.title,
     body: params.body,
     url: params.url,
+    ...(params.tag ? { tag: params.tag } : {}),
   });
 }
 
@@ -127,12 +137,20 @@ export async function broadcastNewAdminPostPush(params: {
     : "";
   const path = `${basePath}${qs}`;
   const openUrl = siteUrl ? `${siteUrl}${path}` : path;
-  const prefix = params.channel === "mk-room" ? "MK ROOM" : "フィード";
-  const body = `${prefix}: ${params.title}`.slice(0, 180);
+  const placeLabel = params.channel === "mk-room" ? "MK ROOM" : "フィード";
+  const postTitle = String(params.title).trim();
+  const title = `${placeLabel}：新しい投稿`;
+  const body =
+    postTitle.length > 0
+      ? `「${postTitle}」が公開されました`.slice(0, 180)
+      : "新しい投稿が公開されました";
 
   await sendPushPayloadToRows(admin, rows, {
-    title: "ミヤタステーション",
+    title,
     body,
     url: openUrl,
+    tag: params.postId
+      ? `miyata-new-post-${params.postId}`
+      : `miyata-new-post-${params.channel}`,
   });
 }

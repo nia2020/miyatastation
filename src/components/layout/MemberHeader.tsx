@@ -41,7 +41,7 @@ function HeaderNotifications() {
       isNew: newFlags.forms,
     },
     {
-      label: "フィード",
+      label: "フィード（新しい投稿）",
       href: "/dashboard/chat",
       isNew: newFlags.chat,
     },
@@ -89,9 +89,12 @@ function HeaderNotifications() {
               </li>
             ))}
           </ul>
+          <p className="px-3 pt-2 pb-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 mt-1">
+            コメントの案内はブラウザのプッシュ通知です（プロフィールで通知を ON にした場合）。タップすると該当の投稿が開きます。
+          </p>
           {!hasAny ? (
-            <p className="px-3 pt-2 pb-1 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 mt-1">
-              新しい更新はありません
+            <p className="px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
+              一覧に NEW はありません
             </p>
           ) : null}
         </div>

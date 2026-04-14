@@ -2,8 +2,9 @@
 self.addEventListener("push", function (event) {
   var data = {
     title: "ミヤタステーション",
-    body: "新しい投稿があります",
+    body: "サイトを開いて内容を確認してください",
     url: "/dashboard/chat",
+    tag: "miyata-push-fallback",
   };
   if (event.data) {
     try {
@@ -11,17 +12,21 @@ self.addEventListener("push", function (event) {
       if (json.title) data.title = json.title;
       if (json.body) data.body = json.body;
       if (json.url) data.url = json.url;
+      if (json.tag) data.tag = json.tag;
     } catch (_e) {
       /* ignore */
     }
   }
+  var opts = {
+    body: data.body,
+    icon: "/mascot.png",
+    badge: "/mascot.png",
+    data: { url: data.url },
+    tag: data.tag,
+    renotify: true,
+  };
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: "/mascot.png",
-      badge: "/mascot.png",
-      data: { url: data.url },
-    })
+    self.registration.showNotification(data.title, opts)
   );
 });
 
