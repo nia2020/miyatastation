@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getMinDatetimeLocalValueLocalTz } from "@/lib/event-datetime";
 
 interface ChatPostFormProps {
   onPostCreated?: () => void;
@@ -207,7 +208,7 @@ export function ChatPostForm({
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                  min={getMinDatetimeLocalValueLocalTz(1)}
                   className="mt-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800 text-sm"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">

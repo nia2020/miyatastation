@@ -27,6 +27,19 @@ export function eventDateIsoToDatetimeLocalValue(iso: string): string {
     .slice(0, 16);
 }
 
+/** 端末ローカル時刻の壁時計を datetime-local の value に整形（新規予約投稿の既定と整合） */
+export function dateToLocalDatetimeLocalValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** 予約の最短時刻（端末ローカルで N 分後）。UTC の toISOString().slice(0,16) は pattern 不一致の原因になるため使わない */
+export function getMinDatetimeLocalValueLocalTz(minutesFromNow = 1): string {
+  return dateToLocalDatetimeLocalValue(
+    new Date(Date.now() + minutesFromNow * 60_000)
+  );
+}
+
 /**
  * いまのカレンダー日付（Asia/Tokyo）の 0:00 を表す瞬間を ISO UTC で返す。
  * イベント一覧は「その日付が終わるまで」予定側に残す（日付が変わったら過去へ）。

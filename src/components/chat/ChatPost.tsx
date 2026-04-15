@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import { eventDateIsoToDatetimeLocalValue } from "@/lib/event-datetime";
 
 /** テキスト内のURLをリンクに変換 */
 function linkify(text: string) {
@@ -90,7 +91,7 @@ export function ChatPost({
     Array.isArray(post.images) ? post.images : []
   );
   const [editPublishedAt, setEditPublishedAt] = useState<string>(
-    post.published_at ? post.published_at.slice(0, 16) : ""
+    post.published_at ? eventDateIsoToDatetimeLocalValue(post.published_at) : ""
   );
   const [uploading, setUploading] = useState(false);
   const editFileInputRef = useRef<HTMLInputElement>(null);
@@ -104,7 +105,9 @@ export function ChatPost({
 
   const publishedAtChanged =
     (editPublishedAt ? editPublishedAt : null) !==
-    (post.published_at ? post.published_at.slice(0, 16) : null);
+    (post.published_at
+      ? eventDateIsoToDatetimeLocalValue(post.published_at)
+      : null);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -325,7 +328,6 @@ export function ChatPost({
                     type="datetime-local"
                     value={editPublishedAt}
                     onChange={(e) => setEditPublishedAt(e.target.value)}
-                    min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
                     className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-800"
                   />
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -397,7 +399,9 @@ export function ChatPost({
                     setEditContent(post.content);
                     setEditImages(postImages);
                     setEditPublishedAt(
-                      post.published_at ? post.published_at.slice(0, 16) : ""
+                      post.published_at
+                        ? eventDateIsoToDatetimeLocalValue(post.published_at)
+                        : ""
                     );
                   }}
                   className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 text-sm"
