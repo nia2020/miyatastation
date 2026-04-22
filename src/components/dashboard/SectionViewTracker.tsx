@@ -24,19 +24,21 @@ export function SectionViewTracker() {
     const sections = Array.isArray(entry) ? entry : [entry];
 
     const record = async () => {
-      const results = await Promise.all(
+      // 画面上の NEW は楽観的に即消す（DB書き込みの成否に関わらずUX優先）
+      trackedRef.current = pathname;
+      sections.forEach((s) => clearSectionViewed?.(s));
+
+      await Promise.all(
         sections.map((section) =>
           fetch("/api/profile/section-viewed", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ section }),
+          }).catch(() => {
+            /* noop: 失敗してもUIは消したまま */
           })
         )
       );
-      if (results.every((r) => r.ok)) {
-        trackedRef.current = pathname;
-        sections.forEach((s) => clearSectionViewed?.(s));
-      }
     };
 
     record();
