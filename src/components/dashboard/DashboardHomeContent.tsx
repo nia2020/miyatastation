@@ -110,7 +110,7 @@ const HUB_LINKS = [
     description: "宮田 和弥 秘密の部屋",
     icon: null,
     theme: "gold" as CardTheme,
-    newFlag: null,
+    newFlag: "mkRoom" as const,
   },
 ] as const;
 
@@ -243,6 +243,11 @@ export function DashboardHomeContent({
             href="/dashboard/usage-guide"
             className={`group relative z-0 flex gap-4 rounded-xl border border-slate-200 dark:border-slate-600 p-5 min-w-0 flex-1 transition-all duration-300 hover:scale-[1.02] hover:z-10 ${THEME_CLASSES.sky.cardBg} ${THEME_CLASSES.sky.hoverBorder} ${THEME_CLASSES.sky.hoverShadow}`}
           >
+            {newFlags.usageGuide ? (
+              <span className="absolute top-3 right-3 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded">
+                NEW
+              </span>
+            ) : null}
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg overflow-hidden transition-transform duration-300 ${THEME_CLASSES.sky.iconBg} ${THEME_CLASSES.sky.iconText} ${THEME_CLASSES.sky.iconHover}`}>
               <FileText className="h-6 w-6" />
             </div>

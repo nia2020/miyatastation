@@ -56,6 +56,8 @@ interface DashboardSidebarProps {
     googleForms?: boolean;
     chat?: boolean;
     archiveVideos?: boolean;
+    mkRoom?: boolean;
+    usageGuide?: boolean;
   };
   /** モバイルドロワー用：リンククリック時に閉じるコールバック */
   onLinkClick?: () => void;
@@ -77,7 +79,9 @@ export function DashboardSidebar({
             (id === "events" && newFlags.events) ||
             (id === "forms" && (newFlags.messageCollection || newFlags.googleForms)) ||
             (id === "chat" && newFlags.chat) ||
-            (id === "archive-videos" && newFlags.archiveVideos);
+            (id === "archive-videos" && newFlags.archiveVideos) ||
+            (id === "mk-room" && newFlags.mkRoom) ||
+            (id === "usage-guide" && newFlags.usageGuide);
           return (
             <Link
               key={id}

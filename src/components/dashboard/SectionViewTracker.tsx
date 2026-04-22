@@ -10,6 +10,8 @@ const SECTION_MAP: Record<string, SectionId | SectionId[]> = {
   "/dashboard/forms": ["message_collection", "google_forms"],
   "/dashboard/chat": "chat",
   "/dashboard/archive-videos": "archive_videos",
+  "/dashboard/mk-room": "mk_room",
+  "/dashboard/usage-guide": "usage_guide",
 };
 
 export function SectionViewTracker() {

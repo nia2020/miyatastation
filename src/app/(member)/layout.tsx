@@ -21,6 +21,8 @@ export default async function MemberLayout({
     googleForms: false,
     chat: false,
     archiveVideos: false,
+    mkRoom: false,
+    usageGuide: false,
   };
 
   try {
@@ -41,12 +43,25 @@ export default async function MemberLayout({
         supabase
           .from("site_config")
           .select("key, value, updated_at")
-          .in("key", ["message_collection_forms", "google_form_url"]),
-        supabase.from("admin_posts").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          .in("key", ["message_collection_forms", "google_form_url", "usage_guide"]),
+        supabase
+          .from("admin_posts")
+          .select("created_at")
+          .eq("channel", "feed")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
         supabase
           .from("archive_videos")
           .select("updated_at")
           .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("admin_posts")
+          .select("created_at")
+          .eq("channel", "mk-room")
+          .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
       ]),
@@ -67,6 +82,7 @@ export default async function MemberLayout({
     );
     const formsRow = siteConfigMap.message_collection_forms;
     const googleRow = siteConfigMap.google_form_url;
+    const usageGuideRow = siteConfigMap.usage_guide;
     let hasMessageCollectionContent = false;
     if (formsRow?.value?.trim()) {
       try {
@@ -92,6 +108,9 @@ export default async function MemberLayout({
     const googleViewedAt = lastViewedMap.google_forms ?? legacyFormsViewed;
     const chatLastUpdate = contentUpdates[2].data?.created_at;
     const archiveLastUpdate = contentUpdates[3].data?.updated_at;
+    const mkRoomLastUpdate = contentUpdates[4].data?.created_at;
+    const usageGuideLastUpdate = usageGuideRow?.updated_at ?? null;
+    const hasUsageGuideContent = !!usageGuideRow?.value?.trim();
     newFlags = {
       events: !!eventsLastUpdate && new Date(eventsLastUpdate) > new Date(lastViewedMap.events ?? 0),
       messageCollection:
@@ -106,6 +125,13 @@ export default async function MemberLayout({
       archiveVideos:
         !!archiveLastUpdate &&
         new Date(archiveLastUpdate) > new Date(lastViewedMap.archive_videos ?? 0),
+      mkRoom:
+        !!mkRoomLastUpdate &&
+        new Date(mkRoomLastUpdate) > new Date(lastViewedMap.mk_room ?? 0),
+      usageGuide:
+        !!usageGuideLastUpdate &&
+        new Date(usageGuideLastUpdate) > new Date(lastViewedMap.usage_guide ?? 0) &&
+        hasUsageGuideContent,
     };
   } catch (e) {
     console.error("Member layout content fetch error:", e);

@@ -33,7 +33,9 @@ function HeaderNotifications() {
     newFlags.messageCollection ||
     newFlags.googleForms ||
     newFlags.chat ||
-    newFlags.archiveVideos;
+    newFlags.archiveVideos ||
+    newFlags.mkRoom ||
+    newFlags.usageGuide;
   const items = [
     {
       key: "events",
@@ -54,10 +56,22 @@ function HeaderNotifications() {
       isNew: newFlags.chat,
     },
     {
+      key: "mk-room",
+      label: "MK ROOM",
+      href: "/dashboard/mk-room",
+      isNew: newFlags.mkRoom,
+    },
+    {
       key: "archive-videos",
       label: "アーカイブ動画",
       href: "/dashboard/archive-videos",
       isNew: newFlags.archiveVideos,
+    },
+    {
+      key: "usage-guide",
+      label: "ご利用案内",
+      href: "/dashboard/usage-guide",
+      isNew: newFlags.usageGuide,
     },
   ] as const;
 

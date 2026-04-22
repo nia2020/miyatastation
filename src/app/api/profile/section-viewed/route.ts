@@ -10,7 +10,9 @@ type SectionKey =
   | "chat"
   | "archive_videos"
   | "message_collection"
-  | "google_forms";
+  | "google_forms"
+  | "mk_room"
+  | "usage_guide";
 
 const VALID_SECTIONS: readonly SectionKey[] = [
   "events",
@@ -19,6 +21,8 @@ const VALID_SECTIONS: readonly SectionKey[] = [
   "archive_videos",
   "message_collection",
   "google_forms",
+  "mk_room",
+  "usage_guide",
 ];
 
 /**

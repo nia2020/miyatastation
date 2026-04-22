@@ -8,6 +8,8 @@ export type NewFlags = {
   googleForms: boolean;
   chat: boolean;
   archiveVideos: boolean;
+  mkRoom: boolean;
+  usageGuide: boolean;
 };
 
 export type SectionId =
@@ -15,7 +17,9 @@ export type SectionId =
   | "message_collection"
   | "google_forms"
   | "chat"
-  | "archive_videos";
+  | "archive_videos"
+  | "mk_room"
+  | "usage_guide";
 
 type NewFlagsContextValue = {
   newFlags: NewFlags;
@@ -28,6 +32,8 @@ const defaultFlags: NewFlags = {
   googleForms: false,
   chat: false,
   archiveVideos: false,
+  mkRoom: false,
+  usageGuide: false,
 };
 
 const NewFlagsContext = createContext<NewFlagsContextValue | null>(null);
@@ -54,6 +60,10 @@ export function NewFlagsProvider({
           return { ...prev, chat: false };
         case "archive_videos":
           return { ...prev, archiveVideos: false };
+        case "mk_room":
+          return { ...prev, mkRoom: false };
+        case "usage_guide":
+          return { ...prev, usageGuide: false };
         default:
           return prev;
       }
