@@ -31,7 +31,7 @@ const SECTIONS = [
   { id: "events", label: "イベント情報", href: "/dashboard/events", icon: Calendar },
   {
     id: "forms",
-    label: "メッセージ募集・各種フォーム",
+    label: "各種フォーム",
     href: "/dashboard/forms",
     icon: MessageSquare,
   },

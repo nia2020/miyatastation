@@ -86,22 +86,13 @@ const HUB_LINKS = [
     newFlag: "events" as const,
   },
   {
-    key: "message-collection",
-    href: "/dashboard/forms#message-collection",
-    title: "メッセージ募集",
-    description: "テーマ・メッセージの募集フォーム",
-    icon: MessageSquare,
-    theme: "emerald" as CardTheme,
-    newFlag: "messageCollection" as const,
-  },
-  {
-    key: "google-forms",
-    href: "/dashboard/forms#google-forms",
+    key: "forms",
+    href: "/dashboard/forms",
     title: "各種フォーム",
-    description: "Googleフォームへのリンク",
+    description: "テーマ・メッセージの募集とGoogleフォームへのリンク",
     icon: MessageSquare,
     theme: "emerald" as CardTheme,
-    newFlag: "googleForms" as const,
+    newFlag: null,
   },
   {
     key: "chat",
@@ -184,7 +175,12 @@ export function DashboardHomeContent({
           const { key, href, title, description, icon: Icon, theme, newFlag } = link;
           const t = THEME_CLASSES[theme];
           const useLogoIcon = href === "/dashboard/mk-room";
-          const isNew = newFlag ? newFlags[newFlag] : false;
+          const isNew =
+            key === "forms"
+              ? newFlags.messageCollection || newFlags.googleForms
+              : newFlag
+                ? newFlags[newFlag]
+                : false;
           return (
             <Link
               key={key}

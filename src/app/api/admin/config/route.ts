@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { coerceMessageForm, parseMessageForms, type MessageForm } from "@/lib/forms";
+import { coerceMessageForm, splitMessageForms, type MessageForm } from "@/lib/forms";
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export type { MessageForm };
 
@@ -46,7 +49,11 @@ export async function GET() {
     {} as Record<string, string | null>
   );
 
-  const forms = parseMessageForms(config);
+  const { messageCollection, googleForm } = splitMessageForms(config);
+  const forms: MessageForm[] = [
+    ...messageCollection,
+    ...(googleForm ? [googleForm] : []),
+  ];
 
   return NextResponse.json({
     forms,
@@ -87,7 +94,12 @@ export async function PATCH(request: NextRequest) {
   const { data: existingRows } = await supabase
     .from("site_config")
     .select("key, value")
-    .in("key", ["message_collection_forms", "announcement"]);
+    .in("key", [
+      "message_collection_forms",
+      "announcement",
+      "google_form_url",
+      "message_collection_title",
+    ]);
 
   const existingMap = Object.fromEntries(
     (existingRows ?? []).map((r) => [r.key, r.value ?? ""])
@@ -107,6 +119,29 @@ export async function PATCH(request: NextRequest) {
   if (existingMap.announcement !== newAnnouncementValue) {
     const { error } = await supabase.from("site_config").upsert(
       { key: "announcement", value: newAnnouncementValue, updated_at: now },
+      { onConflict: "key" }
+    );
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
+
+  if (existingMap.google_form_url && existingMap.google_form_url.trim() !== "") {
+    const { error } = await supabase.from("site_config").upsert(
+      { key: "google_form_url", value: "", updated_at: now },
+      { onConflict: "key" }
+    );
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
+
+  if (
+    existingMap.message_collection_title &&
+    existingMap.message_collection_title.trim() !== ""
+  ) {
+    const { error } = await supabase.from("site_config").upsert(
+      { key: "message_collection_title", value: "", updated_at: now },
       { onConflict: "key" }
     );
     if (error) {

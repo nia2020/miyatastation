@@ -42,16 +42,10 @@ function HeaderNotifications() {
       isNew: newFlags.events,
     },
     {
-      key: "message-collection",
-      label: "メッセージ募集",
-      href: "/dashboard/forms#message-collection",
-      isNew: newFlags.messageCollection,
-    },
-    {
-      key: "google-forms",
+      key: "forms",
       label: "各種フォーム",
-      href: "/dashboard/forms#google-forms",
-      isNew: newFlags.googleForms,
+      href: "/dashboard/forms",
+      isNew: newFlags.messageCollection || newFlags.googleForms,
     },
     {
       key: "chat",

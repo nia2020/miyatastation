@@ -33,7 +33,7 @@ export function ConfigFormAdmin() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/config")
+    fetch("/api/admin/config", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         setForms(
